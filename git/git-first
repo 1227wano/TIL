@@ -1,0 +1,48 @@
+0717 TIL
+
+--------------------------------------------------
+
+git init
+git 저장소로 초기화
+
+git add
+git에 추가할 준비 (staging area로 이동)
+
+git commit -m <메세지>
+staging에 있는 내용을 기록
+
+git status
+현재 변경 사항 내역 + staging area 표시
+
+git log
+여태까지 변경 내역을 확인
+
+--------------------------------------------------
+
+git remote add origin <url>
+원격 저장소를 추가한다
+name은 보통 origin을 사용
+
+git push <origin> <branch>
+git push origin master
+내 저장소의 변경 내역(commit)들을 원격에 푸시
+
+git clone <url>
+저장소를 복제해온다
+
+git pull <name> <branch>
+git pull origin master
+원격 저장소에 있는 내용을 가져온다.
+
+--------------------------------------------------
+
+.gitignore 파일 생성 후 제거하고자 하는 파일 입력하면,
+push할 때 제외하고 push
+
+merge conflict 시, 우선 pull 후 중복부분 선택 혹은 새로운 내용으로 변경 후 push로 해결
+
+
+소감 : 
+Git에 관한 일련의 과정들은 이미 알고 있었지만, 
+add할때 코드들이 우선 staging area에 간다는 사실을 처음 알았고 
+remote로 원격저장소를 추가하는 과정을 정확히 숙지하고 있지 않아서 유익했다.
