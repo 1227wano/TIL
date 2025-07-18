@@ -1,0 +1,39 @@
+0718 TIL
+
+--------------------------------------------------
+
+<git revert>
+ : 단일 commit 실행 취소 ->  기존의 변경사항을 삭제하고 새로운 commit으로 추가
+ex) git revert 해당commit아이디
+
+단, 파일의 내용이 변경될 때는 충돌날수도 있음
+-> 기록이 손실되는 것을 방지하기 위해 = 기록의 무결성, 협업의 신뢰성 UP
++ 
+git revert --no-commit 커밋아이디 로 하면 staging area에 올라가고 커밋안됨
+
+<git reset>
+ : 특정 commit 포인트로 되돌아감 = 과거로 시간여행
+(ex) git reset [옵션] 커밋아이디
+  -> 옵션 : 
+   --soft : 커밋 기록은 사라지되 파일은 남는다
+   --mixed : soft는 파일을 add된 상태(커밋전)로 남기지만 mixed는 add전 상태로 남김
+   --hard : 커밋 기록과 파일 둘 다 사라짐
+
+git restore 
+ : 파일 내의 내용에 관하여 변경사함을 삭제
+git restore --staged
+ : add된 내용을 Unstag 함
+
+
+<AI>
+AI > ML > 딥러닝
+
+Chat'GPT' : Genarative Pre-trained Transformer
+ GPT모델은 'Transformer'의 디코더 부분만을 사용
+api key :  누가 API를 쓰는지 인식하기 위한 개인코드, 사용량 모니터링 & 호출횟수 확인용
+
+API key를 활용하여 VS코드에서 챗봇 만들기
+Chat을 오픈, 질문을 통해 바이브코딩, API key를 직접 입력하여 바이브코딩한 챗봇으로 ChatGPT와 소통
+
+
+
