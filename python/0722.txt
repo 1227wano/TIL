@@ -12,7 +12,7 @@
   리스트의 가변성
     - 인덱싱으로 특정 인덱스 지정해서 수정 가능
     my_list[2] = ‘four’ → my_list_3 = [1, four, 3, 'python', ['hello', 'world', '!!!']]
-    - 슬라이싱으로 여러값 한번에 변경 가능
+    - 슬라이싱으로 여러값 한번에 변경 가능 -> 이거 유용할듯?
     my_list[2:4] = [’three’, ‘four’] → my_list_3 = [1, 2, ‘three', ‘four’, ['hello', 'world', '!!!']]
 
 - **tuple**
