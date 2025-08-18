@@ -1,0 +1,136 @@
+### Stack 문제 해결 기법
+
+- 재귀호출
+: 함수가 자신과 같은 작업을 반복해야 할 때 자신을 다시 호출함
+    
+    factorial(n!를 계산하는거) 함수에서 n=4 인 경우
+    
+    → fact(n) 를 만들고, n x fact(n-1) 으로 호출과 return으로 계산
+    
+    피보나치수열
+    
+    ```python
+    def fibo(n):
+    		if n < 2:
+    				return n
+    		else:
+    				return fibo(n-1) + fibo(n-2)
+    ```
+    
+    재귀함수의 기본형
+    : 현재 호출 단계와 목표 단계를 인자로 사용
+    → 현재단계 i, 목표 N을 인자로 갖는 재귀함수(i, N)이 기본형
+    
+    ```python
+    def f(i, N)
+    		if i == N:   # 중단조건
+    				return
+    		else:        # 재귀호출
+    				f(i+1, N)
+    ```
+    
+    모든 배열 원소에 접근하는 재귀함수 
+    
+    ```python
+    def f(i, N):   # 크기 N인 배열 arr[i]에 접근
+    		if i == N:
+    				return
+    		else:
+    				print(arr[i])
+    				f(i+1, N)
+    ```
+    
+    반복문 비교 장점은? → 반복조건을 자세하게 지정 가능
+    
+    ```python
+    # v = 3 인 경우, 3을 찾으면 재귀호출 중
+    def f(i, N, v):   # v = 찾는 값
+    		if i == N:
+    				return 0
+    		elif arr[i] == v:
+    				return 1
+    		else:
+    				return f(i+1, N, v)
+    ```
+    
+- Memoization
+: 이전에 계산한 값을 메모리에 저장해서 다시 계산하지 않도록하여 전체적인 실행속도 향상
+    
+    
+    피보나치  재귀호출의 문제점 : 엄청난 중복 호출이 존재
+    
+    ```python
+    # memo를 위한 배열 할당, 모두 0으로 초기화
+    # memo[0]을 0으로 memo[1]는 1로 초기화
+    def fibo1(n):
+    		global cnt
+    		cnt += 1
+    		if n >= 2 and memo[n] == 0:   # 해당 수가 아직 피보연산 전이면
+    				memo[n] = fibo1(n-1) + fibo1(n-2)
+    		return memo[n]
+    		
+    cnt = 0     # 몇번 계산되었는지 카운트
+    print(fibo1(10), cnt)
+    
+    memo = [0] * (n+1)
+    memo[0] = 0
+    memo[1] = 1
+    ```
+    
+- DP(Dynamic Programming)
+: 입력 크기가 작은 부분 문제들을 먼저 해결한 뒤, 그 결과를 바탕으로 더 큰 부분 문제를 순차적으로 해결해 나가며 최종적으로 전체 문제의 해답을 도출
+    
+    
+    피보나치 수열 DP 적용 문제
+    
+    - 문제의 최적해가 그 하위 문제의 최적해로부터 쉽게 구성될수있는 최적 부분구조여야 함
+    - 동일한 하위 문제가 여러번 반복되어 나타나는 중복 부분 문제여야 함
+    - 최적 부분구조 + 중복 부분문제
+        
+        F(n) = F(n-1) + F(n-2)
+        
+         = (F(n-2) + F(n-3)) + F(n-2)
+        
+    
+    ```python
+    def fibo2(n):
+    	  f = [0] * (n + 1)
+    	  f[0] = 0
+    	  f[1] = 1
+    	  for i in range(2, n + 1):
+    	    f[i] = f[i-1] + f[i-2]
+    	  
+    	  return f[n]
+    ```
+    
+    재귀 구조에 Memoization을  사용하는 것보다, 반복적인 구조로 DP를 구현하는 방식이 성능면에서 더 효율적. 재귀적 구조는 내부에 시스템 호출 스택을 사용하는 오버헤드가 발생하기 때문
+    
+- DFS(Depth First Search)
+: 한 방향 깊게 탐색 후 다 가면 되돌아와 다른 방향 탐색
+    
+    → 마지막 갈림길의 정점으로 되돌아가서 다시 깊이 탐색을 반복해야하므로 LIFO구조의 스택 사용
+    
+    ![image.png](attachment:7e900374-03d7-4a4c-b8b8-10e4cbfc5636:image.png)
+    
+    ![image.png](attachment:bccae143-104f-4c10-84d5-80d4d8952b50:image.png)
+    
+
+- 일타싸피
+    
+    
+    ![image.png](attachment:90b9bf99-5b0d-4100-a0d2-4e2902c2f9a9:image.png)
+    
+    ```python
+    import math
+    math.pi
+    
+    degree = 60
+    rad = degree * math.pi / 180   
+    # rad로 변환
+    ```
+    
+    ![image.png](attachment:f5d5041c-7fc6-483a-9bd2-5ee7d5be1ee6:image.png)
+    
+    atan2() 사용 추천
+    
+    math.degrees() 사용하기
