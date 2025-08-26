@@ -1,0 +1,117 @@
+- CSS Box Model
+    - block 타입
+    : 독립된 하나의 덩어리처럼 웹페이지의 큰 구조와 단락을 만들어 동작함
+        1. 항상 새로운 행으로 나뉨 (너비 100%)
+        2. width 속성을 지정하지 않으면 inline방향으로 사용가능한 공간을 모두 차지
+        3. padding, margin, border 로 인해 다른 요소를 상자로부터 밀어냄
+        4. 타입 대표는 div (다른 HTML 요소들을 그룹화하여 레이아웃 구성/스타일 적용)
+    - inline 타입 (형광펜으로 칠하는것 같은)
+    : 문장 안의 단어처럼 흐름에 따라 자연스럽게 배치되며, 개행없이 텍스트의 일부만 스타일 적용
+        1. width, height 속성 사용불가고, 콘텐츠의 크기 만큼만 영역 차지
+        2. 상하로는 padding, margin, border가 적용되고 다른 요소 못밀어내지만 좌우는 밀어냄
+        3. 타입 대표는 span (개행하지 않아, 문서 구조에 큰 변화 주지 않음)
+    - Normal flow
+        
+        : 일반적인 흐름 또는 레이아웃을 변경하지 않은 경우 웹 페이지 요소가 배치되는 방식
+        
+        : 블록은 한 줄 전체를, 인라인은 컨텐츠 만큼의 공간만 차지하며 줄을 바꾸지 않음
+        
+    - 기타 display 속성
+        1. inline-block 타입
+        : 줄바꿈 없이, 크기 지정 가능 / width, height 사용 가능 / 다른 요소 밀어내기 가능
+        2. none 타입
+        : 요소를 화면에 표시하지 않고, 공간조차 부여되지 않음
+    
+- CSS Position
+    - CSS Layout
+        - 각 요소의 위치와 크기를 조정하여 웹 페이지의 디자인(전체적인 뼈대)을 결정하는 것
+        - 핵심 속성 : display(block, inline, flex, grid, ...)
+    - CSS Position
+        - 요소를 Normal Flow에서 제거하여 다른 위치로 배치하는 것
+        - 핵심 속성 : position(static, relative, absolute, fixed, sticky, …)
+    
+    - Position 유형
+        1. static : 요소를 Normal Flow에 따라 배치 / top, right, bottom, left 속성이 적용안됨
+        2. relative : 요소를 Normal Flow에 따라 배치 / static 기준으로 이동 trbl 속성으로 위치조정
+        → static 기준 기존에 있던 영역도 차지함(공백으로)
+        3. absolute : 요소를 Normal Flow에 따라 제거 / 가장 가까운 relative 부모 요소를 기준으로 이동 / trbl 속성으로 위치 조정 / 문서에서 차지하는 공간이 없어짐
+        → 왜 relative인 부모요소일까 = 상대적으로 따라가려고
+        4. fixed : 요소를 Normal Flow에 따라 제거 / 현재 화면영역을 기준으로 이동 / 스크롤해도 고정 / trbl 속성으로 위치 조정 / 문서에서 차지하는 공간이 없어짐
+        5. sticky : relative & fixed 특성을 결합 / 스크롤 위치가 임계점에 도달하기 전엔 relative → 도달하면 fixed 처럼 고정 / 다음 sticky 가 나오면 대체됨
+        
+    - z-index
+        - 정수 값을 사용해 z축 순서를 지정
+        - 값이 클수록 요소가 위로
+        - static이 아닌 요소에만
+        - 기본값은 auto로 부모 요소의 z-index 값에 영향 받음 ( 부모보다 높아도 위로 못감)
+        - 같은 부모 내에서만 z-index 값을 비교하고, 값이 같으면 HTML 문서 순서대로
+        
+- CSS Flexbox
+    
+    : 요소를 행과 열 형태로 배치하는 1차원 레이아웃 방식
+    → 책장에 책들을 정리하는 것과 같음. (display : flex) Flex안에 책들을 넣고 손쉽게 배치
+    
+    - main axis : 주 축 (좌우)
+    - cross axis : main axis 에 수직인 축 (상하)
+    - Flex Container : 이 컨테이너의 1차 자식 요소들이 Flex Item이 됨
+    : flexbox 속성 값들을 사용하여 자식 요소들을 배치하는 주체
+    
+    - Flexbox 속성 목록
+    
+    ![image.png](attachment:d10fe683-f140-4686-aca1-f26e9ffe7159:image.png)
+    
+    - flex-direction : item이 나열되는 방향 지정
+        - row : 기본값, 아이템 가로방향, 좌우
+        - column : 아이템 세로방향으로, 상하
+        - -reverse : 시작과 끝선이 서로 바뀜
+    - flex-wrap : 아이템 목록이 container 한 행에 안들어가는 경우 다른 행에 배치할지 여부 결정
+        - nowrap : 기본값, 개행 안함
+        - wrap : 여러 줄에 걸쳐 배치 되게 설정
+    - justify-content : 주 축을 따라 아이템들을 정렬하고 간격 조정
+        - flex-start : 기본값, 주 축의 시작점으로 정렬
+        - center : 주 축의 중앙으로 정렬
+        - flex-end : 주 축의 끝점으로 정렬
+    
+    ![image.png](attachment:80b3888c-1900-497e-93fb-1983b2a4389b:image.png)
+    
+
+- AI
+    
+    "현재 AI 코딩 어시에게 모호하게 지시하고, 비효율적으로 일시키고 있는 듯 하다!”
+    
+    - 효율적인 바이브 코딩 방법론
+        - PRD 작성 ( 일종의 기획서, 요구사항 명세서 ) ← 한번에 작업 가능
+            - 목적, 기본 지침, 코디 스타일, 의존성, 예시코드, 디자인 컨셉
+            
+            ![image.png](attachment:aa5fff3d-7f2c-4bc1-9aaf-b60b2de9d857:image.png)
+            
+            ![image.png](attachment:9084685e-7212-4347-9aa7-092ce7f9735b:image.png)
+            
+        
+        - PRD 작성 시 주의 사항
+            1. 요구사항을 명확하게 정의
+            : 챗봇 웹 사이트를 Vue, Spring Boot를 활용해 구현하시오
+            2. 기술 스택 및 버전, 코딩 스타일 명시
+            : Bootstrap 5.3버전을 사용해 구현하시오. Vue3의 Composition API 스타일로 구현하시오
+            3. 복잡한 요구사항을 한꺼번에 담기보단, 작은 단위로 나눠 단계적으로 구성
+                1. 채팅페이지 - 사용자 메시지는 우측 정렬, 챗봇 메시지는 좌측 정렬 .. 등
+            4. 문서 구조화
+            : Markdown 문법 적용
+            5. 외부 API 호출 시 샘플 코드 제공
+            : 구현 언어에 맞춰 샘플코드 제공 시 효과적 (JavaScript로 API 호출시 JavaScript샘플코드 제공)
+        
+        - 올바른 프롬프트 작성법, 프롬프트 엔지니어링
+            
+            : 원하는 결과물을 GPT가 생성하도록 입력을 설계 및 최적화 하는 과정
+            
+            1. 역할 부여(페르소나 부여)
+            2. 프롬프트 구조화(마크다운 또는 XML)
+            3. 작성 예시 제공
+            4. 페르소나 → 기능 요구사항 → 상세 요구사항 → 주의사항 및 코드 예시 → 작성 예시 순서로
+            - AI가 생성한 PRD를 반드시 검수!
+    
+    - 코딩 어시 활용 챗봇 개발 실습
+        - PRD 작성
+            - ChatGPT 에서 프롬프트 입력, 검수 후 최종 PRD 복
+        - At commands(@)를 활용하여 경로를 특정 가능 → 효율적인 디버깅
+            -
