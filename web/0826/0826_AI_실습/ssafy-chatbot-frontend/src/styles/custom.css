@@ -1,0 +1,14 @@
+:root {
+  --ssafy-point-color: #00EEFF;
+}
+
+.btn-primary {
+    --bs-btn-bg: var(--ssafy-point-color);
+    --bs-btn-border-color: var(--ssafy-point-color);
+    --bs-btn-hover-bg: #00c4d3;
+    --bs-btn-hover-border-color: #00b8c7;
+}
+
+.navbar-brand, .nav-link:hover, .nav-link:focus {
+    color: var(--ssafy-point-color) !important;
+}
