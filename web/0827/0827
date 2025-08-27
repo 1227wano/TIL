@@ -1,0 +1,94 @@
+- Bootstrap - CSS 프론트엔드 프레임워크(Toolkit)
+    
+    : 미리 만들어진 다양한 디자인 요소들을 제공하여 웹사이트를 빠르고 쉽게 개발할수있도록
+    
+    CDN
+    
+    : 서버와 사용자 사이의 물리적인 거리를 줄여 컨텐츠 로딩에 소요되는 시간 최소화
+    
+    = 지리적으로 사용자와 가까운 CDN 서버에 컨텐츠를 저장해서 사용자에게 전달
+    
+    Bootstrap 기본 사용법
+    
+    1. Spacing을 표현하는 방법
+        1. property : margin / padding
+        2. sides : 방향 (top, left, x, t)
+        3. size : Spcing의 상대적 너비
+        
+        ![image.png](attachment:727f9974-1eb4-42ef-8cb9-8bc0d51fe540:image.png)
+        
+- Reset CSS
+    
+    : 모든 HTML 요소 스타일을 일관된 기준으로 재설정하는 간결하고 압축된 규칙 시트
+    
+    - 모든 브라우저는 각자의 ‘user agent stylesheet’를 가지고 있음
+    - 문제는 이 설정이 브라우저마다 상이하다는 것
+    - 모든 브라우저에서 웹사이트를 동일하게 보이게 만들어야 하는 개발자에겐 매우 골치
+    
+    ⇒ 모두 똑같은 스타일 상태로 만들고 스타일 개발 시작하자
+    
+    - Normalize CSS
+        
+        : Reset CSS 방법 중 대표적인 방법
+        
+        → 웹 표준 기준으로 브라우저 중 하나가 불일치하다면 차이가 있는 브라우저를 수정하는 방법
+        
+    
+- Bootstrap 활용
+    - Typography
+        - Display headings
+        - Inline text elements
+        - Lists
+    - Colors
+        - text colors
+        - background colors
+    - Component
+        - Alerts
+        - Badges
+        - Cards
+        - Navbar
+        - Carousel
+        - Modal
+
+- Semantic Web
+    
+    : 웹 데이터를 의미론적으로 구조화된 형태로 표현하는 방식
+    
+    - HTML Semantic Element
+        
+        : 기본적 모양과 기능 이외의 의미를 가지는 HTML 요소
+        
+        - header
+        - nav
+        - main
+        - article
+        - section
+        - aside
+        - footer
+        
+        ![image.png](attachment:ad7fe51b-ec6d-4884-b6ea-d2c44acba761:image.png)
+        
+    - Semantic in CSS
+        
+        : CSS 방법론 - CSS를 효율적이고 유지 보수가 용이하게 작성하기 위한 일련의 가이드라인
+        
+        OOCSS(Object Oriented CSS)
+        : 객체 지향적 접근법을 적용하여 CSS를 구성하는 방법론
+        
+        1. 구조와 스킨 분리 (중복제거)
+        
+        ![image.png](attachment:38125707-0865-42cc-931b-2b940b00ad01:image.png)
+        
+        1. 컨테이너와 콘텐츠 분리
+            - 객체에 직접 적용이 아닌, 객체를 둘러싸는 컨테이너에 스타일 적용
+            - 스타일 정의할 때 위치에 의존적인 스타일 사용하지 않도록
+            - 콘텐츠를 다른 컨테이너로 이동시키거나 재배치할때 스타일 깨지는 것 방지
+            
+        
+- AI
+    
+    PRD 구조 → 플젝 단위가 커지면 폴더별, 기능별 PRD 작성
+    
+    AI 코딩 어시스턴트별 컨텍스트 파일 비교
+    
+    ![image.png](attachment:bef3d11c-fc60-4ac5-8aaf-569fff569eee:image.png)
