@@ -12,7 +12,7 @@ def dfs(n):  # 탐색 시작할 인덱스 받아 처음은 0
     for i in range(len(li)):
         for j in range(i+1, len(li)):
             # 두 카드 교환
-            li[i], li[j] =li[j], li[i]
+            li[i], li[j] = li[j], li[i]
 
             # 중복 탐색 방지: 같은 깊이에서 같은 숫자가 나온적 있으면
             # 더이상 탐색할 필요 없음 (가지치기)
