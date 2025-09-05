@@ -1,25 +1,30 @@
-def where_is_maxi(n):  # 탐색 시작할 인덱스 받아 처음은 0
-    # n부터 리스트 끝까지 가장 큰 숫자가 무엇인지 찾음
-    max_num = max(li[n:])
+def dfs(n):  # 탐색 시작할 인덱스 받아 처음은 0
+    global max_result
 
-    # 만약 n번째 위치의 숫자가 이미 최대값이면, 바꿀 필요가 없으므로
-    # 현재 위치인 n을 그대로 반환해서 아무것도 안 하도록 신호를 줌
-    if li[n] == max_num:
-        return n
+    # 종료조건: 주어진 교환횟수 모두 사용
+    if n == cnt:
+        # 현재 리스트를 숫자로 만들어서 최대값과 비교 후 갱신
+        max_result = max(max_result, int("".join(li)))
+        return
 
-    # 만약 최대값이 여러 개 있으면 가장 뒤(오른쪽)에 있는 것과 바꿔야 유리함
-    # 따라서 리스트를 뒤에서부터 거꾸로 탐색
-    for i in range(len(li)-1, n-1, -1):
-        if li[i] == max_num:
-            return i  # 최대값의 '절대 인덱스'를 찾으면 바로 반환
+    # 모든 교환 조합 만들어서 검증
+    # 0번부터 i번 카드, i+1번부터 j번 카드 뽑아 교환
+    for i in range(len(li)):
+        for j in range(i+1, len(li)):
+            # 두 카드 교환
+            li[i], li[j] =li[j], li[i]
 
+            # 중복 탐색 방지: 같은 깊이에서 같은 숫자가 나온적 있으면
+            # 더이상 탐색할 필요 없음 (가지치기)
+            state = (n, "".join(li))
+            if state not in visited:
+                visited.add(state)
+                # 다음 교환을 위해 재귀 호출
+                dfs(n+1)
 
-# def what_can_change(y):
-#     if y == 0:
-#         return -1
-#
-#     min_num = min(li[y:-1:-1])
-#     return li[y:-1:-1].index(min_num)
+            # 원래 상태로 복귀 (백트래킹)
+            # 다른 조합을 시도하기 위해 교환했던 카드를 다시 원위치
+            li[i], li[j] = li[j], li[i]
 
 
 T = int(input())
@@ -30,29 +35,9 @@ for C in range(1, T+1):
     li = list(word)
     cnt = int(count)
 
-    ni = 0          # 현재 인덱스
+    max_result = 0      # 현재 인덱스
+    visited = set()     # 방문 기록 초기화
 
-    while cnt > 0 and ni < len(li):
-        maxi = where_is_maxi(ni)  # 최대값 인덱스
+    dfs(0)      # 0부터 탐색
 
-        # where_is_maxi의 결과가 현재 위치(ni)와 다르다면 교환이 필요함
-        if maxi != ni:
-            li[ni], li[maxi] = li[maxi], li[ni]
-            cnt -= 1
-
-        # 다음 위치를 확인하러 이동
-        ni += 1
-
-        # 최대상금으로 만든 후에도 교환횟수가 남았을 경우,
-        # 1. 횟수가 짝수면 걔네만 바꾸면 되니까 사실상 변화없음
-        # 2. 남은 횟수가 홀수고, 중복 숫자가 있으면 걔네 바꾸고 끝
-        # 중복된 숫자가 있는지 확인
-        check = len(set(li)) < len(li)  # set()에 넣으면 중복 제거됨
-
-        # 중복 숫자가 없으면
-        if cnt % 2 == 1 and not check:
-            # 가장 손해가 적은 마지막 두 숫자를 교환
-            li[-1], li[-2] = li[-2], li[-1]
-
-    result = "".join(li)
-    print(f'#{C} {result}')
+    print(f'#{C} {max_result}')
