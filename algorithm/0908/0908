@@ -1,0 +1,218 @@
+- 부분집합 (powerset)
+    
+    : 어떤 집합의 공집합과 자기자신을 포함한 모든 부분
+    
+    ( 구하고자 하는 어떤 집합의 원소 개수가 n일 경우 부분집합의 수는 2^n개 이다. )
+    
+    ! 공집합도 포함 !
+    
+    부분 집합을 찾아내는 구현 방법
+    
+    1. 완탐
+        - 재귀호출을 이용한 완탐  →  재귀는 종료조건과 후보수(가지수)만 생각하면됨
+        - 실전보다는 학습용
+    2. binary counting
+        - 2진수 & 비트연산을 이용
+        - 모든 부분집합이 필요할때 사용
+    
+    - 완탐
+    
+    ```python
+    # # 3명의 친구 부분집합 찾기
+    # arr = ['O', 'X']
+    # name = ['MIN', 'CO', 'TIM']
+    # path = []
+    #
+    #
+    # def recur(cnt):
+    #     # 종료조건 (3명을 모두 고려함)
+    #     if cnt == 3:
+    #         print(*path)
+    #         return
+    #
+    #     # 재귀호출 파트
+    #     # - 부분집합에 포함되는 경우 (O을 추가)
+    #     path.append(arr[0])
+    #     recur(cnt + 1)
+    #     path.pop()
+    #
+    #     # - 포함되지 않는 경우 (X를 추가)
+    #     path.append(arr[1])
+    #     recur(cnt + 1)
+    #     path.pop()
+    #
+    #
+    # recur(0)
+    #
+    #  -------- 실제로 많이 보게 될 코드
+    
+    name = ['MIN', 'CO', 'TIM']
+    
+    def recur(cnt, subset):
+        # 종료조건 (3명을 모두 고려함)
+        if cnt == 3:
+            print(*subset)
+            return
+    
+        # 부분집합에 포함시키는 경우
+        recur(cnt+1, subset + [name[cnt]])
+    
+        # 부분집합에 포함시키지 않는 경우
+        recur(cnt+1, subset)
+    
+    recur(0, [])
+    ```
+    
+    * arr + 1 과 arr += 1 은 다르다~
+    
+    전자는 기존 객체에 1을 더한 새로운 객체, 후자는 기존 객체에 1을 더한 것
+    
+    - 바이너리 카운팅
+        
+        : 원소 수에 해당하는 n개의 비트열을 이용해 부분집합을 표시
+        
+        ( 2.subset_bibnnary.py 코드 참고 )
+        
+        ```python
+        arr = [1, 2, 3, 4]
+        
+        # i: 0~2^n == i번째 부분집합
+        for i in range(1 << len(arr)):
+            for idx in range(len(arr)):
+                if i & (1 << idx):
+                    print(arr[idx], end=" ")
+            print()
+        
+        # 검사하고자 하는 비트를 오른쪽으로 하나씩 shift 하면서 체크하는 코드
+        def get_sub(tar):
+            print(f'target = {tar}', end=' / ')
+            for i in range(len(arr)):
+                # 0x1 로 표기한 이유 (사실 1, 0b1, 0b0001, True 다 된다)
+                # - 비트 연산임을 명시하는 권장 방법
+                if tar & 0x1:  # 가장 우측 비트를 체크
+                    print(arr[i], end=' ')
+                tar >>= 1
+        
+        for target in range(1 << len(arr)):
+            get_sub(target)
+            print()
+        ```
+        
+
+- 조합
+    
+    : 서로 다른 n개의 원소 중 r개를 순서 없이 골라낸 것
+    
+    : 부분집합과의 차이는 ? → 조합은 r개를 확정해서 골라야함
+    
+    - {A, B, C, D, E} 5명 중 3명 뽑을 수 있는 모든 경우를 메모장에 적어보자
+    
+    ```python
+    # 5명 중 3명을 순서없이 고르기
+    arr = ['A', 'B', 'C', 'D', "E"]
+    N = 3
+    path = []
+    
+    def recur(cnt, start):
+        # N명을 뽑으면 종ㄹ쇼
+        if cnt == N:
+            print(*path)
+            return
+    
+        for i in range(start, len(arr)):
+            path.append(arr[i])
+            # recur(cnt + 1, i)   # i번째를 골랐으니 다음 선택은 i부터 고려 -> 중복허용조합이 됨
+            recur(cnt + 1, i+1)   # i번째를 골랐으니 다음 선택은 i+1부터 고려
+            path.pop()
+        
+    
+    recur(0, 0)
+    ```
+    
+- 그리디
+    
+    : 결정이 필요할 때, 현재 기준으로 가장 좋아보이는 선택지로 결정하여 답을 도출하는 알고리즘
+    
+    - 대표적인 문제해결 기법
+    
+    ![image.png](attachment:2c4ef757-dbef-463a-8817-e1e183c98a49:image.png)
+    
+    - 무엇이 그리디인가?
+        1. 규칙성을 찾아야한다.
+            - 규칙을 못찾으면 못푼다.
+        
+        1. 탐욕적 선택 조건 (Greedy Choice Property)
+            - 각 단계의 최적해 선택이 이후 단께 선택에 영향을 주지 않는다.
+            - 즉, 각 단계 규칙이 변경되면 안된다.
+            - 동전문제 예시
+                1. 500원 가능한 만큼 주자, 100원 가능한 만큼 주자
+                2. ⇒ 각 단계를 진행하면서 규칙 유지
+        2. 최적 부분 구조 (Optimal Subsrtructure)
+            - 각 단계의 최적해 선택을 합하면, 전체 문제의 해결책이 되어야함
+                
+                → 증명을 통해 해결
+                
+            - 동전 문제 예시
+                
+                [명제] 가장 큰 동전부터 고르면 최소 동전 수가 나온다
+                
+                [간접증명] 
+                
+                : 최적해보다 더 적은 동전으로 표현 가능하다 (가정)
+                
+                → N원을 더 작은 값의 동전으로 더 작은 수로 할 수 있다.
+                
+                ⇒ 동전이 배수로 있기 때문에 안됨
+                
+                ⇒ 더 적은 값으로 나누면 무조건 더 큰 수가 나옴
+                
+                → 모순 발생
+                
+                ⇒ 원래 명제가 참
+                
+            1. 반례가 없는가?
+            
+            ```python
+            # 동전의 최소 개수 구하기
+            # 규칙 : 큰 동전부터 나누자
+            coin_list = [100, 50, 10, 500]
+            target = 1730
+            cnt = 0
+            result = 0
+            
+            # Greedy 문제의 단골손님
+            #  정렬 연습 : 튜플이라면? 인스턴스 리스트? 역순이라면?
+            #    - 예) 길이가 우선 정렬, 같은 길이는 사전 순으로 정렬
+            # list.sort() vs sorted()
+            coin_list.sort(reverse=True)    # 큰 동전부터 사용
+            
+            for coin in coin_list:
+                possible_cnt = target // coin   # 현재 동전으로 가능한 최대 수
+                result += possible_cnt          # 정답에 더해준다
+                target -= coin * possible_cnt   # 쓴 만큼 금액을 빼준다
+            
+            print(result)
+            ```
+            
+    
+- 문제
+    - Knapsack
+    
+    : kg과 가격이 있는 각 물건들을 어떻게 가져가야 제일 이득일까?
+    
+    → kg 당 가격이 가장 높은 물건을 최대한 담으면 된다
+    
+    - 활동 선택 문제
+    
+    : 원하는 회의실 예약이 주어질 때 가능한 많은 회의가 열리기 위해선?
+    
+    → 종료 시간이 빠른 순서로 활동들을 정렬한다
+    
+
+정리
+
+1. 순열 vs 부분 집합 vs 조합
+    - 각 문제들의 접근법
+2. 그리디 
+    - 그리디 규칙을 잘 찾고, 그리디 조건 검증
+    - 많은 문제를 풀어보
