@@ -5,10 +5,10 @@
 #     close = sor[n][1]-1           # 이전 종료시간 (1,4)니까 3
 #     if not time[close]:           # 처음용
 #         return n
-#     elif close <= sor[n+count][0]:      # 이전 종료시간이 다음 타임 시작시간 이전이면
+#     elif close < sor[n+count][0]:      # 이전 종료시간이 다음 타임 시작시간 이전이면
 #         return n+count                  # 다음 탐색 타임 i인덱스 리턴
 #     else:                       # 그게 아니면 다음 타임 탐색
-#         count += 1
+#         count += 1                # ! count 초기화 필요!
 #         return next_time(n)
 
 
