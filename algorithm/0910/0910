@@ -1,0 +1,150 @@
+0910 분할정복
+
+- 분할 정복 기법 (Divide and Conqure)
+    
+    퍼즐처럼, 문제를 작은 하위 문제로 분할하고 각각을 해결(정복)한 뒤, 그 결과를 통합하여 문제 해결
+    
+    ![image.png](attachment:2a145118-9ca4-4cce-8a2a-c136575d39f5:image.png)
+    
+    마치 이진트리탐색과 비슷하여 재귀호출로 풀어간다
+    
+    ![image.png](attachment:4814fae1-288d-4de2-a8b3-d5fbf6e60a3d:image.png)
+    
+- 병합 정렬
+    - 여러 개의 정렬된 자료의 집합을 병합하여 한 개의 정렬된 집합으로 만드는 방식
+    - 외부 정렬이 기본
+    - 멀티코어 CPU나 다수의 프로세서에서 정렬 알고리즘을 병렬화하기 위해 활용
+    1. 분할 단계 : 전체 자료 집합에 대하여, 최소 크기의 부분집합이 될 때까지 분할
+    2. 2개의 부분집합을 정렬하면서 하나의 집합으로 병합, 모든 부분집합이 1개로 병합될 때까지
+    
+    ```python
+    # 1. 분할: 리스트의 길이가 1일 때까지 분할
+    # 2. 정복: 리스트의 길이가 1이 되면 자동으로 정렬됨
+    # 3. 병합
+    #   - 왼쪽, 오른쪽 리스트 중
+    #       작은 원소부터 정답 리스트에 추가하면서 진행
+    def merge(left, right):
+        # 두 리스트를 병합한 결과 리스트
+        result = [0] * (len(left) + len(right))
+        l = r = 0
+    
+        # 두 리스트에서 비교할 대상이 남아있을 때 까지 반복
+        while l < len(left) and r < len(right):
+            if left[l] < right[r]:
+                result[l + r] = left[l]
+                l += 1
+            else:
+                result[l + r] = right[r]
+                r += 1
+    
+        # 왼쪽 리스트에 남은 데이터들을 모두 result 에 추가
+        while l < len(left):
+            result[l + r] = left[l]
+            l += 1
+    
+        # 오른쪽 리스트에 남은 데이터들을 모두 result 에 추가
+        while r < len(right):
+            result[l + r] = right[r]
+            r += 1
+    
+        return result
+    
+    def merge_sort(li):
+        if len(li) == 1:
+            return li
+    
+        # 1. 절반 씩 분할
+        mid = len(li) // 2
+        left = li[:mid]    # 리스트의 앞쪽 절반
+        right = li[mid:]   # 리스트의 뒤쪽 절반
+    
+        left_list = merge_sort(left)
+        right_list = merge_sort(right)
+    
+        # print(left_list, right_list)
+        # 분할이 완료되면
+        # 2. 병합
+        merged_list = merge(left_list, right_list)
+        return merged_list
+    
+    arr = [69, 10, 30, 2, 16, 8, 31, 22]
+    sorted_arr = merge_sort(arr)
+    print(sorted_arr)
+    
+    ```
+    
+- 퀵 정렬
+    
+    기준값(pivot item)을 중심으로 주어진 배열을 두 개로 분할하고(Partitioning), 각각을 정렬하여 전체 배열을 정렬
+    
+    매우 큰 입력 데이터에 대해서 좋은 성능을 보이는 알고리즘
+    
+    Partitioning
+    
+    1. 작업 영역을 정한다
+    2. 작업 영역 중 가장 왼쪽에 있는 수를 pivot이라고 하자.
+    3. 피벗을 기준으로 왼쪽에는 피벗보다 작은 수를, 오른쪽에는 큰 수를 배치 (정렬 안됨)
+    4. 파티셔닝이 끝나면 pivot 확정
+    
+    - Hoare Patition
+        1. 피봇 값들 보다 큰 값은 오른쪽, 작은 값들은 왼쪽 집합에 위치하도록
+        2. 피봇을 두 집합의 가운데에 위치시킴
+        
+    
+    - Lomuto Partition
+        
+        ![image.png](attachment:68ef48a2-a726-48d3-8126-ac49cc47101d:image.png)
+        
+    
+    파티셔닝 기법 2가지 (호어, 로무토)
+    
+    - 퀵정렬
+        - 평균 속도 : O(N logN)
+        - 최악의 경우 : O(N ^ 2)
+        - 데이터가 많을 수록 유리
+    
+- 이진 검색 (자료가 정렬된 상태여야 함!)
+    1. 자료의 중앙에 있는 원소를 고른다
+    2. 중앙 원소의 값과 찾고자 하는 목표 값을 비교한다
+    3. 목표 값이 중앙 원소의 값보다 작으면 자료의 왼쪽 반에 대해서 새로 검색을 수행하고, 크다면 자료 오른쪽 반에 대해서 새로 검색 수행
+    4. 찾고자 하는 값을 찾을 때까지 반복
+    
+    ```python
+    def binary_search_while(target):
+        left = 0                # 검색 시작점
+        right = len(arr) - 1    # 검색 끝점
+        cnt = 0                 # 몇 번 만에 검색했는가
+    
+        while left <= right:    # 교차되면 못찾은 것
+            mid = (left + right) // 2
+            cnt += 1        # 검색 횟수 추기
+    
+            if arr[mid] == target:
+                return mid      # mid 위치에 존재한다고 return
+    
+            # target 보다 정답이 왼쪽에 있는 경우
+            if target < arr[mid]:
+                right = mid - 1
+    
+            # target 보다 정답이 왼쪽에 있는 경우
+            else:
+                left = mid + 1
+        
+        # 못찾은 경우
+        return -1, cnt
+    
+    arr = [4, 2, 9, 7, 11, 23, 19]
+    
+    # 이전검색은 항상 정렬된 데이터에 적용
+    arr.sort()
+    
+    print()
+    ```
+    
+
+심화 학습 
+
+- Lower Bound / Upper Bound
+- Parametric Search
+    - 정렬된 배열에서 특정 값 이상(이하)가 처음으로 나타나는 위치를 찾는 알고리즘
+    - 특정 데이터의 범위 검색 등에서 활용
