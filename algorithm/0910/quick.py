@@ -7,7 +7,7 @@ def partition(left, right):     # 피벗 맨 왼쪽
         while i <= j and arr[i] <= pivot:   # i번째 수가 pivot보다 작은 동안
             i += 1
 
-        while i <= j and arr[i] >= pivot:  # i번째 수가 pivot보다 큰 동안
+        while i <= j and arr[j] >= pivot:  # i번째 수가 pivot보다 큰 동안
             j -= 1
 
         if i < j:   # i가 j보다 왼쪽에 있을 동안 계속 교체
@@ -32,5 +32,4 @@ for T in range(1, T+1):
 
     quick(0, len(arr)-1)
     r = N//2
-    print(arr)
     print(f'#{T} {arr[r]}')
