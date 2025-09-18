@@ -1,0 +1,201 @@
+0918 Django Intro&Design pattern
+
+- Web application
+    
+    ![image.png](attachment:e991171e-a161-41a7-b019-7ae287cf0699:image.png)
+    
+    ![image.png](attachment:db442358-3243-40dc-b6fb-0358cef4633c:image.png)
+    
+- Framework
+    
+    ![image.png](attachment:5e1244fa-3987-4424-99bc-8e2d387e66c6:image.png)
+    
+    - Django
+        
+        : Python기반의 대표적인 웹 프레임워크 (서버 구현이 목적)
+        
+        ![image.png](attachment:1821492f-8615-432a-b438-922de26022d4:image.png)
+        
+- 가상 환경
+    
+    : 하나의 컴퓨터 안에서 또 다른 독립된 파이썬 환경
+    
+    - 가상 환경이 필요한 시나리오 1
+        
+        ![image.png](attachment:df736e3e-cc2f-4f64-9d77-d8a6cdf9afea:image.png)
+        
+    - 시나리오 2
+        
+        ![image.png](attachment:8124ca69-d782-45c5-a3da-16c8807b8609:image.png)
+        
+    
+    ⇒ 가상 환경 비유
+    
+    - 같은 집(컴퓨터) 안에 방(가상 환경)을 따로 만들어도고
+    - 필요한 물건(라이브러리, 패키지 등)을 그 방에만 들여놓는 것과 유사
+    - 방이 다르면 들여놓은 물건이 달라도 서로 간섭하지 않음
+    - 순서
+        1. 가상 환경 생성
+            
+            $ python -m venv venv
+            
+            → 현재 디렉토리 안에 venv로 폴더 생성 ( 직접 수정 X)
+            
+            venv폴더 안에는 파이썬 실행 파일, 라이브러리 등을 담을 곳이 마련됨
+            
+            ( 폴더의 이동은 폴더 순서는 노상관 )
+            
+        2. 가상 환경 활성화
+            
+            $ source venv/Scripts/activate
+            
+            활성화 후, 프롬프트 앞에 (venv)와 같이 표시되면 성공
+            
+        3. 가상 환경 종료
+            
+            $ deactivate 
+            
+            → 다시 Python Global 환경으로 돌아옴
+            
+    
+    - 의존성
+        
+        : 하나의 소프트웨어가 동작하기 위해 필요로 하는 다른 소프트웨어나 라이브러리
+        
+    - 의존성 패키지 : 프로젝트가 의존하는 ‘개별 라이브러리’들을 가리킴
+        1. 패키지 목록 확인
+            
+            $ pip list
+            
+        2. 의존성 기록
+            
+            $ pip freeze 
+            
+            하면 가상 환경에 설치된 모든 패키지를 버전과 함께 특정한 형식으로 출력 
+            
+            → 이 출력값을 기록 
+            
+            → 기록을 기반으로 다른 컴터에서 할 때 동일하게 새로 설치
+            
+            $ pip freeze > requirements.txt
+            
+            하면 위 이름의 파일로 저장, 협업 시 공유 가능
+            
+            ![image.png](attachment:fcffd488-77dd-49bb-b157-14481ba994dd:image.png)
+            
+    - 의존성 패키지 관리가 필요한 이유
+        - 패키지마다 버전이 다름
+        - 프로젝트가 커질 수록 사용하는 패키지의 개수도 늘어남
+        - 다른 팀원들이 같은 환경을 구성할 때 의존성 리스트가 반드시 필요
+        
+    - 의존성 패키지 기반 설치
+        1. 가상 환경 준비
+            
+            $ python -m venv venv
+            
+            $ source venv/Scripts/activate
+            
+        2. requirements.txt 로부터 패키지 설치
+            
+            $ pip install -r requirements.txt
+            
+    - 가상 환경 주의사항 및 권장 사항
+        
+        ![image.png](attachment:be11f7a3-7977-49a5-af02-cb6f6264d4c1:image.png)
+        
+    - 가상 환경이 필요한 이유
+        
+        ![image.png](attachment:11f2dd0f-dbab-4cce-9671-beb798d71e7d:image.png)
+        
+    - 요약
+        
+        ![image.png](attachment:964637ca-8c8b-4afe-a346-571e1086cefc:image.png)
+        
+    
+- Django 프로젝트
+    
+    순서
+    
+    1. Django 설치
+        
+        $ pip install django
+        
+    2. 프로젝트 생성
+        
+        $ django-admin startproject firstpjt . (.은 현재 디렉토리)
+        
+    3. 서버 실행
+        
+        $ python manage.py runserver
+        
+    
+- Django Design Pattern
+    
+    디자인 패턴
+    
+    : 소프트웨어 설계에서 반복적으로 발생하는 문제에 대한, 검증되고 재사용 가능한 일반적인 해결책
+    
+    - MVC 패턴
+    - MTV 패턴 (Model, Template, View) ← 파이써닉
+    
+    - 프로젝트와 앱
+        
+        프로젝트 = 앱의 집합
+        
+        앱 = 독립적으로 작동하는 기능 단위 모듈
+        
+    
+    - 실행 순서
+        1. 앱 생성
+            
+            앱의 이름은 복수형으로 지정하는 것 권장
+            
+            $ python manage.py startapp articles
+            
+        2. 앱 등록
+            
+            앱 생성 후 등록해야 함
+            
+            사용자가 생성한 app은 상단부터 작성하는 것을 권장 
+            (쟝고 내부 구동 순서 때문)
+            
+            ```python
+            INSTALLED_APPS = [
+                'articles',
+            ```
+            
+        
+    - 프로젝트 구조
+        
+        settings.py
+        : 프로젝트의 모든 설정 관리
+        
+        urls.py
+        : 요청 들어오는 URL에 따라 이에 해당하는 적절한 views를 연결
+        
+        (이하는 쉅 과정에서 수정할 일 없음)
+        
+        ![image.png](attachment:94f06dcb-4fd6-4234-a834-31722a6528f8:image.png)
+        
+    - 앱 구조
+        
+        admin.py
+        : 관리자용 페이지 설정
+        
+        model.py
+        : DB와 관련된 Model 정의
+        
+        view.py
+        : HTTP 요청을 처리하고 응답을 반환
+        
+        apps.py
+        : 앱의 정보가 작성된 곳
+        
+        tests.py
+        : 프로젝트 테스트 코드를 작성
+        
+    
+- 요청과 응답
+    1. URLs → urls.py
+    2. View → views.py
+    3. Template → articles/templates/articles/파일.html  이런 식으로 생성
