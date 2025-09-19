@@ -1,0 +1,93 @@
+0919 Templates & URLs
+
+- Template System
+    
+    : 파이썬 데이터를 HTML 문서와 결합하여 로직과 표현을 분리한 채 동적인 웹페이지를 생성
+    
+    - Django Template Language(DTL)
+        
+        : Template에서 조건, 반복, 변수 등의 프로그래밍적 기능을 제공
+        
+        1. Variable : 변수
+            
+            : render 함수의 세번째 인자로 딕셔너리 타입으로 전달 (key를 변수명으로)
+            
+            . 을 사용하여 변수 속성에 접근 가능
+            
+        2. Fileters
+            
+            : 표시할 변수를 수정할 떄 사용 (변수 + | + 필터)
+            
+            체인이 가능하며 일부 필터는 인자를 받기도
+            
+            약 60개의 built-in template filters 를 제공
+            
+        3. Tags
+            
+            : 반복 또는 논리를 수행하여 제어 흐름을 만듦
+            
+            일부 태그는 시작과 종료 태그가 필요
+            
+            약 24개의 built-in template tags 를 제공
+            
+        4. Comments
+            
+            : 주석
+            
+    
+- 템플릿 상속
+    
+    : 여러 탬플릿이 공통요소를 공유할 수 있게 해주는 기
+    
+    1. 페이지의 공통요소 포함
+    2. 하위 템플릿이 재정의 할 수 있는 공간을 정의
+    - 상속 구조 만들기
+        1. skeleton 역할을 하게 되는 상위 탬플릿 (ex: base.html) 작성
+        2. extends 태그로 상속받을 템플릿 결정 & block 태그로 base.html의 같은 이름으로 작성된 block태그의 내용을 대체
+    - 상속 관련 DTL 태그
+        - extends
+        - block
+        - 
+- 요청과 응답
+    - HTML form : 데이터를 보내고 가져오기~
+        - action : 입력 데이터가 전송될 URL을 지정
+        - method : 데이터를 어떤 방식으로 보낼지 ( GET, POST 등)
+        - input : 사용자의 데이터를 입력 받음
+            
+            name : 사용자가 입력한 데이터에 붙이는 이름
+            
+    - HTML 활용
+        
+        throw - catch
+        
+        ![image.png](attachment:81b9f65d-0595-445b-b869-6299ba2d7344:image.png)
+        
+        ![image.png](attachment:b7cf3986-6a74-4eea-92b0-84c4cb86c277:image.png)
+        
+    
+- Django URLs
+    - URL dispatcher : URL 패턴을 정의, 해당 패턴이 일치하는 요청을 처리할 view함수 매핑
+    - Variavle Routing : URL 일부에 변수를 포함시키기
+        
+        → path에 <자료형:변수명> ⇒ 변수명과 View 함수의 파라미터명은 같아야 함
+        
+    - include 함수 : 플젝 내부 앱들의 URL을 참조할 수 있도록 매핑
+    
+- URL 이름 지정
+    
+    : 기존 주소가 변경되면 해당 URL을 사용하는 모든 위치를 찾아가 변경해야함 → url에 이름 지정해주자
+    
+    1. path 함수에 name 인자를 키워드 인자로 정의해서 사용
+    2. 해당 url을 사용했던 곳의 링크 변경 ( a 태그의 href 속성 값 뿐만 아니라, form의 action 등도 변경)
+        
+        → url 태그
+        
+    
+- URL 이름 공간
+    
+    여러 앱의 url 이름이 같다면? → 이름에 key를 붙이자
+    
+    urls.py에 app_name 변수 설
+    
+
+ttb1227wanho1418001
