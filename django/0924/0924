@@ -1,0 +1,123 @@
+0924 ORM
+
+- ORM (Object-Relational-Mapping)
+    
+    : 객체지향 프로그래밍 언어의 객체와 DB의 데이터를 매핑하는 기술 
+    
+    → Django 내장의 파이썬 SQL 번역기
+    
+    ORM은 Django 개발자를 위해 QuerySet API 라는 특별한 도구를 제공
+    
+- QuerySet API
+    
+    : DB의 복잡합 SQL문을 직관적인 파이썬 코드로 다룰 수 있게 해주는 강력한 번역기
+    
+    - 동작방식
+        1. Django → DB
+            
+            Django의 QuerySet API에서 ORM을 통해 SQL 쿼리로 변환되어 DB로 전달됨
+            
+        2. DB → Django
+            
+            ORM은 SQL 결과를 QuerySet 또는 Instance 형태로 변환하여 반환
+            
+        
+    - QuerySet API
+        - 구문 기본 구조 → “Article.objects.all()”
+            
+            Article : 모델 클라스. DB 테이블에 대한 Python 클래스 표현 역할
+            
+            .objects : 매니저. DB 조회 작업을 위한 기본 인터페이스 역할
+            
+            .all() : QuerySet API 메서드. 특정 DB 작업을 수행하는 역할( all() = 전체 정보 줘 )
+            
+            ![image.png](attachment:6edc94e5-0e7e-42db-bdf9-51a92503cb3e:image.png)
+            
+        
+        - QuerySet 이란
+            
+            DB 에서 전달받은 객체 목록(데이터 모음)
+            
+            순회 가능한 데이터로 1개 이상 데이터를 불러와 사용 가능
+            
+            Django ORM을 통해 만들어진 자료형
+            
+            단, DB가 단일 객체를 반환할 때는 QuerySet이 아닌 모델(class)의 인스턴스로 반환됨
+            
+        
+        - Query API 실습
+            1. 사전 준비
+                
+                pip install ipython
+                
+                pip freeze > requirements.txt ( 패키지 생성 후 환경이 바꼈으니까 )
+                
+            2. Django Shell 접속
+                
+                python [manage.py](http://manage.py) shell 
+                
+                ( → 처음엔 gitignore 등으로 인해 mygrations가 올라가지 않았다면,
+                
+                OperationalError: no such table: articles_article 뜨기 때문에 migrate부터 )
+                
+            3. Create
+                
+                데이터 객체 생성 방법
+                
+                - 빈 객체 생성 후 값 할당 및 저장
+                    
+                    ![image.png](attachment:03729e3b-e4c2-428d-9b02-b6fcf84a2978:image.png)
+                    
+                    save() 인스턴스 메서드는 Article 클래스에 있음
+                    
+                - 초기 값과 함께 객체 생성 및 저장
+                    
+                    → 인자로 입력하여 바로 생성하면 조회는 되지만 저장안된 상태
+                    
+                    ![image.png](attachment:d3663a67-6765-49aa-a0c9-d2375b5446b8:image.png)
+                    
+                - create() 메서드로 한 번에 생성 및 저장 → save() 불필요
+                    
+                    ![image.png](attachment:9bd09078-a03e-4fdc-a8a7-ac30c3142e61:image.png)
+                    
+            4. Read
+                
+                QuerySet 반환 메서드 : 
+                
+                - all()
+                - filter() : 주어진 매개변수와 일치하는 객체를 포함하는 QuerySet 반환
+                    
+                    → 일치하는 게 없어도 Error는 안나고 빈 것이 반환됨
+                    
+                    → .values(’변수명’) 붙이면 필터링한 객체의 변수값 출력
+                    
+                    추가로 ‘변수값이 20이하’ 이런거 조회하려면 아래 참조
+                    
+                    ![image.png](attachment:5fe57124-8df7-4065-8bfa-55ef48e1c8a4:image.png)
+                    
+                
+                QuerySet 반환하지 않는 메서드
+                
+                - get() : 주어진 매개변수와 일치하는 객체를 반환
+                    
+                    → 일치 없으면 DoseNotExist
+                    
+                    → 여러개 있으면 MultipleobjectReturned
+                    
+                    ⇒ get() 는 주로 식별자를 조회하기 위해 사용 ( 아래처럼 사용도 가능 )
+                    
+                    ![image.png](attachment:c5f4f0c8-5a6e-4ccc-81a1-13314eff20f6:image.png)
+                    
+            5. Update
+                - 인스턴스 변수를 변경 후 save() 호출
+                
+                ![image.png](attachment:718ca4ca-2eff-4835-818c-8b70a23bf429:image.png)
+                
+            6. Delete
+                
+                데이터 조회후 delete() 호출
+                
+            
+        - ORM with view
+            
+            ~ 전체 게시글 조회 ~
