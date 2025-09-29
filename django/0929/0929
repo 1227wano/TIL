@@ -1,0 +1,59 @@
+0929 Django Form 🌟
+
+- Django Form
+    
+    유효성 검사 : 수집한 데이터가 정확하고 유효한지 확인하는 과정
+    
+    Form Class
+    
+    - Django Form
+        
+        : 사용자 입력 데이터를 수집하고 처리 및 유효성 검사를 수행하기 위한 도구
+        
+        ```python
+        from django import forms
+        
+        class ArticleForm(forms.Form):
+        		title = forms.CharField(max_length=10)
+        		content = forms.CharField()
+        ```
+        
+        → form 내부의 input 영역을 django가 대체한다
+        
+    
+    - Widgets
+        
+        : HTML ‘input’ element의 표현을 담당
+        
+        CharField(widget=forms.Textarea) 
+        
+        같은 식으로 forms에 없는 속성 추가\
+        
+    
+- Django ModelForm
+    
+    Form : 사용자 입력 데이터를 DB에 저장하지 않을때 ( 검색, 로그인..)
+    
+    ModelForm : 사용자 입력 데이터를 DB에 저장해야 할 때( 게시글 작성, 회원가입 )
+    
+    → Model과 연결되 Form을 자동으로 생성해준는 기능을 제공
+    
+- Meta class : MetaForm의 정보를 작성하는 곳
+    
+    field 및 exclude 속성
+    
+    exclude속성으로 모델에서 포함하지 않도록 필드 지정 가능
+    
+- ModelForm 적용
+    - is_valid() : 여러 유효성 검사를 실행하고 데이터가 유효한지 여부를 Boolean으로 반환
+    - save() : DB객체를 만들고 저장하는 ModelForm의 인스턴스 메서드
+
+- HTTP 요청 다루기
+    - new & create view 함수
+        - 공통점 : 데이터 생성을 구현하기 위함
+        - 차이점 : new 는 GET 요청만, create는 POST 요청만 처리
+        
+        → 결합하자!
+        
+        - context에 담기는 form은 1. is_valid()를 통과하지 못해 에러메세지를 담은 form이거나, else문을 통한 form 인스턴스
+    - edit & update 함수 결합!
