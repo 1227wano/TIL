@@ -1,0 +1,112 @@
+0930 Auth 1
+
+- 🍪 & Session
+    - HTTP
+        
+         : HyperText Transfer Protocol
+        
+        1. 비 연결 지향
+            
+            : 서버는 요청에 대한 응답을 보낸 후 연결을 끊음
+            
+            : 클라이언트는 서버와 서로 연결되어 있는 상태가 아님
+            
+        2. 무상태
+            
+            : 연결을 끊는 순간 통신이 끝, 상태 정보 유지 안됨
+            
+            : 로그인 상태 유지 못함
+            
+    - 쿠키
+        
+         : 서버가 사용자의 웹 브라우저에 전송하는 작은 데이터 조각
+        
+        특징 : 사용자 인증, 추적, 상태 유지, key-value
+        
+        예시 : 로그인 유지(세션관리), 장바구니, 언어/테마 등 사용자 설정 기억
+        
+        ![image.png](attachment:060ea7de-791d-4d03-a460-9517e28933eb:image.png)
+        
+        ![image.png](attachment:e38bd9f3-4513-4fe1-bcdb-3bed56eff919:image.png)
+        
+        - 쿠키 전송 과정
+            
+            서버는 HTTP 응답 헤더의 Set-Cookie 필드를 통해 클라이언트에게 쿠키 전송
+            
+            브라우저는 받은 쿠키를 저장, 동일한 서버에 재요청시 HTTP 요청 Header의 Cookie필드에 저장된 쿠키 함께 전송
+            
+        - 사용 목적
+            1. 세션 관리 : 로그인, 아이디 자동완성, 공지 안보기, 장바구니 등
+            2. 개인화 : 사용자 선호 설정 저장
+            3. 추적, 수집 : 사용자 행동 기록 및 분석
+    
+    - Session
+        
+        : 서버 측에서 생성되어 클라이언트와 서버 간의 상태를 유지, 상태 정보를 저장
+        
+        → 실제 데이터는 서버에만 보관되므로 쿠키만 사용하는 방식보다 훨씬 보안에 유리
+        
+        ![image.png](attachment:09c753d9-b77e-4b96-95c4-123dcbcefc2d:image.png)
+        
+        ![image.png](attachment:c01d4c20-2bcb-4992-8b4b-63ea711335b1:image.png)
+        
+        - 특징
+            - 쿠키에 세션 데이터를 저장하여 매 요청시마다 세션 데이터를 함께 보냄
+            - 영구적으로 유지되지 않음
+        
+- Django Authentication System
+    - 인증의 필요성 → django에서는 사용자 인증과 관련된 가장 중요하고 기본적인 뼈대 제공
+    - django authentication system
+        - 사용자 인증 후 연결될 User Model 관리
+        - Session 관리 : 로그인 상태를 유지하고 서버에 저장하는 방식 관리
+        - 기본 인증 : 로그인 등 다양한 기능 제공
+    - 내장된 auth 앱
+        
+        기본적으로 username, password, email 등의 필드를 가진 User 모델을 제공
+        
+        단순히 로그인 여부만 확인하는 것을 넘어, 사용자별 또는 그룹별로 특정 행동에 대한 권한 부여 가능
+        
+    - User Model 대체의 필요성
+        - 플젝의 특정 요구사항에 맞춰 사용자 모델을 확장 가능
+        - django에서 제공하는 기본 유저 모델이 아닌 우리가 직접 커스텀한 유저 모델을 사용해보자!
+
+- Custom User Model
+    - 사전 준비
+        - 두번째 app으로 acounts 생성 및 등록
+        - auth와 관련된 경로나 키워드들을 django 내부적으로 accounts 라는 이름으로 사용하고 있기 때문에 되도록 accounts로 지정하는 것을 권장
+    - 대체하기
+        1. AbstractUser 클래스를 상속받는 커스텀 User 클래스 작성
+            
+            기존 User 클래스와 완전히 같은 모습을 가지게 됨
+            
+        2. 우리가 작성한 User 모델로 대체
+            
+            → settings.py의 AUTH_USER_MODEL 값을 변경
+            
+        3. admin site에 대체한 User 모델 등록
+            
+            → admin 페이지에 출력 시키기 위해
+            
+    - AUTH_USER_MODEL
+        
+        * 주의 * Django는 플젝 중간에 AUTH_USER_MODEL을 변경하는 것을 권장하지 않음!
+        
+        커스텀 User 모델은 기본 User모델과 동일하게 작동하면서도 나중에 맞춤 설정할수있음
+        
+        → 첫 migrate 전에 생성할 것!
+        
+- Login
+    1. 인증(id/pass) 후, Session을 생성하여 서버 저장하고 클라이언트에 쿠키 전달
+    2. AuthenticationForm()
+        - 로그인 인증에 사용할 데이터를 입력받는 빌트인폼
+        - User 모델과 직접연결된 ModelForm이 아닌, 일반 Form을 상속받음(구성요소 다름)
+    3. 입력받은 정보 기반 로그인하여 세션을 만드는 login함수 사용
+        
+        (생성한 login함수와 이름이 겹치므로 as auth_login 같은 식으로 별칭 지어줌)
+        
+        login(request, user)
+        
+        - AuthenticationForm 을 통해 인증된 사용자를 로그인하는 함수
+        - request : 현재 사용자의 세션 정보에 접근하기 위해 사용
+        - user : 어떤 사용자가 로그인 되었는지를 기록하기 위해 사용
+        - get_user() : AuthenticationForm의 인스턴스 메서드
