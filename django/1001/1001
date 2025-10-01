@@ -1,0 +1,78 @@
+0931 Auth 3
+
+- 회원정보 수정
+    
+    ```python
+    @login_required
+    def update(request):
+        if request.method == 'POST':
+            form = CustomUserChangeForm(request.POST, instance=request.user)   
+            if form.is_valid():
+                form.save()
+                return redirect('articles:index')
+        else:
+            form = CustomUserChangeForm(instance=request.user)
+        context = {
+            'form' : form,
+        }
+        return render(request, 'accounts/update.html', context)
+    ```
+    
+    # 기존 객체 request.user를 수정한다는 instance 마지막에 잊지 않긔
+    
+- 비밀번호 변경
+    
+    얘는 UserChange로 변경안됨
+    
+    → PasswordChangeForm 빌트인 사용
+    
+    but 인자의 구성이 다르다
+    
+    → request.user 와 request.POST 를 매개변수로 보내기
+    
+    but 암호 변경 시 세션 무효화 됨
+    
+    → update_session_auth_hash 함수 사용
+    
+- 비밀번호 암호화
+    
+    빈번한 해킹 사태 등 암호화 필요성이 증가함
+    
+    - 기본적으론 평문 그대로 저장됨 = 보안 취약
+    - 특정 규칙으로 인코딩한 후 저장 = 보안 취약
+    - 복원이 불가한 고정길이 문자열로 변환 (해시) 후 저장 = 보안 굿
+    
+    Hash : 임의의 크기를 가진 데이터를 고정된 크기의 고유 값으로 변환
+    
+    해시 함수 : Hash 해주는 함수. but 같은 입력값을 넣으면 언제나 같은 해시 값이 나옴
+    
+    SHA-256 : 안전한 해시 알고리즘. 어떤 데이터든 256비트 길이의 결과물로
+    
+    → 공격자들은 해시값을 미리 계산해두는 ‘레인보우테이블’ 방식으로 공격 시도
+    
+    → 사용자마다 ‘임의의 문자열(솔트)’을 비번에 붙여서 해시 암호화 진행
+    
+    → 무차별 대입 공격으로 가능한 모든 비번을 직접 대입해봄 feat. 빠른 연산 속도
+    
+    → 연산 속도를 늦추기 위해 비번 검증 과정을 느리게 만듦 = 키 스트레칭
+    
+    Django에서의 비번 암호화
+    
+    ![image.png](attachment:5aa9a897-96d2-4390-b674-d393ee5bc085:image.png)
+    
+    ‘d2 Naver 비밀번호 암호화’ 검색해서 참고!
+    
+
+- 비밀번호 초기화
+    
+    : Django에 있는 모듈 활용 → urls.py 만 수정하면됨
+    
+    1. 비번 찾으려는 이메일 입력
+    2. 이메일로 비번 재설정 링크를 전송
+        
+        settings.py 에 `EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"`
+        
+    
+- 참고
+    
+    ![image.png](attachment:228b97c5-63e9-4937-8307-c60ece01936e:image.png)
