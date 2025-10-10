@@ -1,0 +1,89 @@
+1010 Static files
+
+- Static files (정적 파일)
+    
+    : 서버 측에서 변경되지 않고 고정적으로 제공되는 파일
+    
+    - 웹서버와 정적 파일
+        
+        기본 역할 : 요청 받은 주소(URL)에 해당하는 자원(Resource)을 찾아 응답해주는 것
+        
+        → 가장 기본적인 자원이 정적 파일
+        
+        ⇒ 적정 파일이 사용자에게 보이려면, 그 파일에 접근할 수 있는 고유한 주소(URL)가 반드시 필요
+        
+    - 처리 과정
+        
+        ![image.png](attachment:9e0fc211-bbb6-4280-95fd-3a9be3236ea8:image.png)
+        
+    - Static files 경로의 종류
+        1. 기본 경로 : app폴더/static/
+            1. static/stylesheets/ 경로에 css 파일 배치
+            2. 메인 페이지에서 css 파일 불러와서, static tag를 사용 ( 빌트인 태그가 아니니 load tag로 import 후 사용 가능 )
+            
+            {% load %} : 특정 라이브러리의 태그와 필터를 현재 탬플릿에서 사용할 수 있도록 불러옴
+            
+            → {% load static %} 은 이제부터 static 관련 태그를 사용한다는 선언문
+            
+            {% static ‘경로’ %} : setting.py의 STATIC_URL 값을 기준으로 해당 정적 파일의 전체 URL 경로를 계산하여, 값 이후의 주소를 경로에 넣어 생성
+            
+            ![image.png](attachment:82db1753-0678-4e37-b354-48c50607d64b:image.png)
+            
+        2. 추가 경로 : STATICFILES_DIRS 에 문자열로 추가 경로 설정
+            
+            ![image.png](attachment:830ff939-e548-428a-8b3d-373bb4a8ca82:image.png)
+            
+        
+        ![image.png](attachment:154bdd21-ca18-405e-8809-cf2e36e007c8:image.png)
+        
+- Media files : 사용자가 웹사이트를 통해 직접 업로드하는 파일
+    
+    ImageFiled() : 이미지 파일을 업로드 하기 위해 사용하는 Django 모델 필드
+    
+    디비 저장 방식 : 파일이 디비에 저장되는게 아닌, 경로만 저장되고 실제 파일은 서버의 특정 폴더(MEDIA_ROOT)에 저장
+    
+    준비사항
+    
+    1. settings.py 에 MEDIA_ROOT, MEDIA_URL 설정
+    2. 작성한 두 개에 대한 URL 지정
+    
+    MEDIA_ROOT : 미디어 파일의 실제 창고 주소
+    
+    MEDIA_URL : 미디어 파일의 웹주소 별명
+    
+    ![image.png](attachment:131cd784-5f71-4faa-bee6-14f0abd93a0c:image.png)
+    
+    ![image.png](attachment:beac960d-28ff-4cf9-8e93-0456b1c8fc2a:image.png)
+    
+    이미지 업로드 구현 과정
+    
+    1. 모델 클래스에 image 필드 작성 (blank=True속성을 작성해 빈 문자열이 저장될 수 있도록 제약조건)
+    2. pip install pillow
+    3. form 요소에 enctype 속성 추가
+    4. ModelForm의 2번째 인자로 요청받은 파일 데이터 (request.FILES) 작성
+    5. 게시글 작성 페이지에서 이미지 업로드 제출하면
+    6. MEDIA_ROOT 경로에 업로드된 이미지 파일 생성되며 저장됨
+    
+    업로드 이미지 제공
+    
+    ImageField의 .url 속성을 사용하면, 해당 파일을 웹에서 접근할 수 있는 전체 URL 주소 얻을 수 있음
+    
+    <img src="{{ article.image.url }}" alt="image">
+    
+- 참고
+    - upload_to 속성 심화 활용
+        1. 날짜를 이용한 경로 구성
+            
+            ![image.png](attachment:6c4ac7ac-aeef-4a25-8269-d4fe7ce2dfcc:image.png)
+            
+        2. 함수를 이용한 동적 경로 생성
+            
+            ![image.png](attachment:93253af7-a9d8-4af4-a165-5a050625780a:image.png)
+            
+    - AWS 인프라 이해하기
+        
+        핵심 서비스 3가지 ( EC2, S3, RDS )
+        
+        ![image.png](attachment:7bd442ff-8de9-4eff-bb74-0fca9d6189f6:image.png)
+        
+        ![image.png](attachment:4dffb182-1bb7-4e51-b640-ec891ee95ed9:image.png)
