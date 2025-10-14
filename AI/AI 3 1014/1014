@@ -1,0 +1,177 @@
+# 선형회귀
+
+입력변수와 출력변수의 관계를 직선 형태로 근사하여, 예측하는 통계적 방법
+
+지도학습의 기초가 되는 접근 (개념적, 실무적으로 유용해서)
+
+- **단순 선형회귀**
+    
+    : 한개의 설명변수와 하나의 반응변수 사이의 선형 관계를 찾는 방법
+    
+    목표 : 데이터를 가장 잘 설명하는 직선을 찾아 예측에 활용
+    
+    ![image.png](attachment:f03c51b9-44e8-4f31-934f-d99e937177d8:image.png)
+    
+
+- **최소 제곱법(least square)**
+    
+    : 실제 관측값과 예측값의 차이(잔차, residual)를 제곱해 합한 값(RSS, 잔차제곱합)을 최소화하는 법
+    
+    목표 : 데이터를 가장 잘 설명하는 직선을 찾기 위해 계수 베타0, 베타1을 추정
+    
+    ![image.png](attachment:2ed1d74b-4bc1-4588-b4b0-f7b36ca796a7:image.png)
+    
+    ![image.png](attachment:334568e7-5ca4-4f20-a75e-9f0fc0467deb:image.png)
+    
+    - 일차 선형 방정식 coefficients 구하기 (beta_1, beta_0)
+
+![image.png](attachment:5af7a4ac-6e36-4928-99f6-4745d26c39af:image.png)
+
+- **다중 선형회귀**
+    
+    : 독립변수가 여러 개 존재할 때 사용하는 기법 → 종속 변수(예측 대상)와의 관계를 구함
+    
+    ![image.png](attachment:bb154c4f-3ccd-4195-a1c2-f2605d4ff1fe:image.png)
+    
+    ![image.png](attachment:f470d6cc-d321-4deb-b0d3-096003bba4ee:image.png)
+    
+    ![image.png](attachment:99c162ac-e4b1-4df3-86c6-4abbfd608e75:image.png)
+    
+    - 회귀계수 해석의 주의점
+        
+        이상적 상황 : 변수들이 연관되지 않고, 독립적일 때 → 계수 해석이 명확함
+        
+        문제 상황 : 변수들이 서로 연관되어 있다 → 계수 추정이 불안정해지고 해석에 혼동이 발생
+        
+        주의 : 관찰 데이터의 상관관계로 인과 관계를 주장하면 안됨
+        
+        ( 예 : 아이스크림 소비량과 익사 발생률의 관계 )
+        
+
+# 로지스틱회귀
+
+- **분류 ( Classification )**
+    
+    : 정해진 범주(카테고리) 중 하나로 지정하는 것
+    
+    범주형 변수 : 수치의 크고 작음이 아닌, 유한한 범주(성별, 혈액형, 지역 등)로 표현하는 변수
+    
+    분류 함수 : 분류함수f(X)를 학습하여 입력 X가 속할 범주 예측
+    
+    → 범주의 직접 예측보다 각 범주에 속할 확률 P(Y=k|x)를 추정하는 게 더 유용할 때가 많음
+    
+    > 분류 문제에 선형회귀를 써도 될까?
+    > 
+    
+    부적절함. 
+    
+    - 이진 분류 문제
+        
+        선형회귀는 선형함수를 계산하는 문제로 예측 값이 (Y값 기준) 제한된 값을 갖게 못함
+        
+        → 예측 확률이 0보다 작거나 1보다 크게 예측 될 수 있어 확률로 쓰기 부적절
+        
+    - 다중 범주 분류 문제
+        
+        범주 변수는 순서가 없는 라벨이므로 부적절
+        
+    
+    ↓ 대안으로
+    
+
+- **로지스틱 회귀**
+    
+    이진 분류에서 출력 범위가 0-1인 **시그모이드 함수** 를 활용하자
+    
+    ![image.png](attachment:4d556dde-c2e3-4c9e-bbd0-475ab8a1cd6b:image.png)
+    
+    ![image.png](attachment:930772ba-3d3c-4e8f-907f-5f7488741592:image.png)
+    
+    - 로지스틱 함수와 선형회귀의 관계
+        
+        로지스틱 함수는 선형함수를 **내포**하고 있다
+        
+        두 함수 간의 관계를 해석하기 위해 오즈(Odds)와 로짓 변환(logit)이 필요
+        
+        오즈 : 성공(y=1)확률이 실패(y=0)에 비해 몇배 더 높은지
+        
+        로짓변환 : Log odds. 오즈에 logm를 취한 함수 형태
+        
+        **로직스틱 모형식 = 선형 모형식 + 시그모이드 함수** 
+        
+        **↔ 로지스틱 모형의 로짓변환 = 선형 모형**
+        
+    - MLE 활용 모수 추정
+        
+        **우도(Likelihood)**
+        
+        : 현재 확률 함수가 데이터를 얼마나 잘 설명하는지
+        
+        선형회귀에서 현재 함수가 데이터와 오차가 작은지를 평가하기 위해 평균제곱오차(MSE)를 지표 삼았듯, 확률을 계산하는 함수를 평가하기 위해선 우도를 지표로
+        
+        → 모델의 학습은 우도 값을 높여 최대화가 되도록 하는 것이 목표이며 이를 
+        **MSE(Maximum Likelihood Estiomation)** 이라 한다
+        
+        ![image.png](attachment:6c5678bc-6e1e-4583-8ebb-2686aaeb6766:image.png)
+        
+
+# 신경망모델
+
+- **Shallow 네트워크**
+    
+    ![image.png](attachment:6de9f15a-5d79-4a7a-b2fe-f0ad82a97b05:image.png)
+    
+    단계별 계산
+    
+    ![image.png](attachment:f4404f27-d13a-47e7-988a-096ba64f7114:image.png)
+    
+    ![image.png](attachment:34e75f40-7453-4a08-aedf-ee17ffb7bbf2:image.png)
+    
+    ![image.png](attachment:efe37259-58c9-4fb5-b067-487b2577b2e1:image.png)
+    
+    ⇒ 최종적으로 Hidden Units 의 수만큼 꺽인 그래프가 완성됨
+    
+    네트워크 도식화
+    
+    ![image.png](attachment:7b87f5d0-5208-40ed-a2eb-b62300f17e52:image.png)
+    
+- **Shallow 네트워크의 표현력**
+    
+    : 충분히 많은 HIdden Unit이 있다면, 임의의 1차원 함수를 원하는 정확도로 근사할 수 있다
+    
+    → **보편적 근사 정리** : 그리고 얕은 신경망은 임의의 연속함수를 임의의 정밀도로 근사할 수 있다
+    
+- **다중 출력 / 입력**
+    - Output이 2개 일때
+        
+        ![image.png](attachment:d5b1664b-4dfe-4ae8-bfe9-f2c58d0a41e8:image.png)
+        
+    - input이 2개일때
+        
+        ![image.png](attachment:9a68ed0f-3e32-4aa7-ba79-2236c91a9bfb:image.png)
+        
+        ![image.png](attachment:4b3536d1-c531-42d4-86b5-85a33a7f22a6:image.png)
+        
+
+- **Deep 네트워크**
+    
+    ![image.png](attachment:58a00d6a-eaa4-451a-9cd9-0e0eeb7e0e4b:image.png)
+    
+    - 2개의 네트워크를 하나로 합성
+        
+        ![image.png](attachment:e89d47a5-a053-481f-97d2-0174e6a7284f:image.png)
+        
+
+- **Deep 네트워크 수식 표현**
+    
+    ![image.png](attachment:495aac4a-0910-4e2a-9501-c0c6a3e62dc3:image.png)
+    
+    ![image.png](attachment:df40e042-afc3-45e4-8c2f-463079b27745:image.png)
+    
+    ![image.png](attachment:414c52e3-1ebc-4cfc-a51a-96c448412933:image.png)
+    
+    ![image.png](attachment:ac387175-aa0b-41e6-bf19-c593282468ef:image.png)
+    
+    ⇒ 네트워크 도식화
+    
+    ![image.png](attachment:53deb15a-d83c-4826-8a21-9c5e3d541bae:image.png)
