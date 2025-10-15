@@ -1,0 +1,425 @@
+# 실습
+
+- DL : 인공신경망 구조를 사용해, ML을 수행하는 분야
+- **MLP ( Multi Layer Perceptron - 다층 뉴런 )** : 인공신경망의 일종.
+- **Perceptron**
+    
+     : 뉴런의 수학적 표현(함수식), 선형 이진 분류 ( ⇒ y=ax+b 라는 선형회귀와 같은 식으로 표현됨 )
+    
+     : 뉴런은 다른 여러 뉴런에게 정보를 받고 다른 뉴런에게 전달하는데, 이 과정이 Perceptron
+    
+     : 두 개의 입력을 받고 각각 가중치를 곱해서 편향을 더한 것이 0 이상인지 아닌지로 판단
+    
+    ( 각 여러개의 뉴런이 있는 ) **입력층 → 은닉층 → 출력층**의 구조로 학습
+    
+    - **입력층 (Input Layer):** 외부로부터 데이터를 받아들이는 첫 관문입니다. 이미지의 픽셀 값, 문장의 단어, 센서 데이터 등 분석하고자 하는 원시 데이터가 입력됩니다.
+    - **은닉층 (Hidden Layer):** 입력층과 출력층 사이에 위치하며, 입력된 데이터의 특징(feature)을 추출하고 패턴을 학습하는 실질적인 연산이 이루어지는 곳입니다. 은닉층은 여러 개가 존재할 수 있으며, 층이 깊어질수록(Deep) 더 복잡하고 추상적인 특징을 학습할 수 있게 되는데, 이를 **심층 신경망(Deep Neural Network, DNN)** 또는 **딥러닝**이라고 부릅니다.
+    - **출력층 (Output Layer):** 신경망의 최종 처리 결과를 내보내는 곳입니다. 이미지 분류 문제라면 각 클래스에 대한 확률을, 주가 예측 문제라면 특정 시점의 주가를 출력합니다.
+    
+    ![image.png](attachment:638b62de-525f-4179-87e2-6e7403db5c02:image.png)
+    
+    ↓ 수학적으로는
+    
+    ![image.png](attachment:d00bc2d0-efe3-4c30-b5dd-88e7b71d9442:image.png)
+    
+    ![image.png](attachment:7bd953b4-aeef-4fbd-ae76-8be65896c4b0:image.png)
+    
+    ![image.png](attachment:414e9b56-a626-4a1b-8c2f-617395d5868a:image.png)
+    
+
+---
+
+# 워드 임베딩과 순환신경망 기반 모델
+
+1. **원-핫 인코딩**
+    
+    : 규칙 기반 혹은 통계적 자연어처리 연구의 대다수는 단어를 원자적(쪼갤 수 없는) 기호로 취급함
+    
+    ex) 벡터 공간 관점에서, 아래는 한 원소만 1이고 나머지는 모두 0인 벡터를 의미함
+    
+    > [0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0]
+    > 
+    
+    이를 **원-핫 표현**이라 하고, 단어를 원-핫 표현으로 바꾸는 과정을 **원-핫 인코딩**이라고 한다.
+    
+    **<**원-핫 인코딩 문제점>
+    
+    1. 검색 쿼리 벡터와 대상이 되는 문서 벡터들이 서로 직교하게 되어, 유사도를 측정할 수 없음
+    2. 차원의 저주 : 차원이 커질수록 데이터가 점점 더 희소해져 활용이 어렵다
+    3. 의미적 정보 부족 : 비슷한 단어라도 유사한 벡터로 표현되지 않는다
+2. **워드 임베딩**
+    
+    : 컴퓨터가 자연어(사람이 쓰는 말)를 이해하고 처리할 수 있도록 **단어를 숫자로 이루어진 벡터(vector)로 변환하는 기술**
+    
+    : 단어를 단어들 사이의 의미적 관계를 포착할 수 있는 **밀집되고 연속적/분산적 벡터 표현으로 나타내는 방법**
+    
+    대표적인 기법
+    
+    - **Word2Vec** : 2013 구글에서 개발, 단어의 표현을 간단한 인공 신경망을 이용해서 학습함
+        
+        → 실제로는 두 가지 알고리즘이 존재
+        
+        **Skip-grams 방식** : 중심 단어 주변 몇 개 단어를 문맥으로 볼 것인가?
+        
+        ![image.png](attachment:a5c651f4-38e2-44c2-8849-e6d991052625:image.png)
+        
+        **Continuous Bag of Words 방식** : 주변 단어를 통해 중심 단어 예측
+        
+        ![image.png](attachment:3834d094-d83c-46cd-98ce-d75214cb6abc:image.png)
+        
+        Skip-Gram vs CBOW
+        
+        ![image.png](attachment:464be907-3507-44a8-8db4-69db724c939d:image.png)
+        
+3. **순차적 데이터**
+    
+    : 데이터가 입력되는 순서와 그 순서를 통해 입력되는 데이터들 사이의 관계가 중요한 데이터
+    
+    특징
+    
+    1. 순서가 중요 : 데이터 순서가 바뀌면 의미가 달라짐
+    2. 장기 의존성 : 멀리 떨어진 과거의 정보가 현재/미래에 영향을 준다
+    3. 가변 길이 : 순차 데이터는 길이가 일정하지 않고 단어 수도 제각각임
+    
+    ![image.png](attachment:3c3276c1-6cca-41cf-9344-1c9ea1b822c1:image.png)
+    
+4. **RNN**
+    
+    > 전통적인 인공신경망(MLP, CNN)들은 고정된 길이의 입력을 받아 가변 길이의 데이터를 처리하기에 부적합함
+    하지만, RNN은 가변 길이의 입력을 받을 수 있고 이전 입력을 기억할 수 있기 때문에 순차적 데이터 처리에 적합한 아키텍처다
+    > 
+    
+    **RNN 아키텍처 설명**
+    : 이전 시점의 정보를 담는 hidden state를 가지고 있다.
+    
+    **특징**
+    
+    - 한번에 하나의 요소를 처리하고 정보를 앞으로 전달
+    - 펼쳐서 보면 각 층이 하나의 시점을 나타내는 깊은 신경망 같음
+    - hidden state를 유지하면서 가변 길이 데이터를 처리함
+    - 출력은 과거 입력에 영향을 받는다 → feedforwarn 신경망과 다름
+    
+    **한계**
+    
+    기울기 소실 문제
+    
+    : 딥러닝에서 역전파 시 앞쪽 층의 기울기가 0에 가까워져서 장기 의존성 학습이 어려워지는 현상
+    
+    원인
+    
+    1. 역전파 과정에서 작은 값들이 계속 곱해짐
+    2. 과거 시점에서 온 오차 신호는 갈수록 더 작은 기울기를 갖게 됨
+    3. 결국 파라미터들이 장기의존성은 학습못하고 단기의존성만 포착함
+    
+5. **LSTM**
+    
+    : 기울기 소실 문제를 해결하기 위해, 1997년에 제안된 RNN의 한 종류
+    
+    특징
+    
+    - 시점 t에서 RNN의 길이가 n인 벡터 hidden state h와 cell state C를 가진다
+        
+        → Hidden state 는 short-term information 을 저장
+        
+        → Cell state는 long-term information을 저장
+        
+        LSTMs는 cell state에서 정보를 읽고, 지우고, 기록 가능
+        
+    
+    ![image.png](attachment:16a669d6-e34e-4dad-ad8b-2d57c0297449:image.png)
+    
+    - 과정 : 3가지 게이트로 어떤 정보를 지우고, 쓰고, 읽을지 결정
+        1. Forget gate : 무엇 버리고 유지할지
+        2. Input gate : 새 정보 중 얼마나 cell state에 쓸지
+        3. Output gate : cell state 중 얼마나 hidden state로 보낼지
+        
+        → 게이트의 각 요소는 열림(1), 닫힘(0), 혹은 그 사이의 값으로 설정됨
+        
+        ![image.png](attachment:5147176f-dcc4-4e16-9cf4-27f582279185:image.png)
+        
+    
+
+# 자연어 처리 모델
+
+1. **언어 모델**
+    
+     : 인간의 두뇌가 자연어를 생성하는 능력을 모방한 모델
+    
+    → 한 문장의 확률은 각 단어의 조건부 확률들의 곱으로 표현 가능
+    
+    - 대표적인 언어 모델 - **N-gram 언어모델**
+        
+        : 연속된 n개의 단어 묶음을 말함
+        
+        ![image.png](attachment:7d58a937-1866-45df-b7f4-7194122a83c6:image.png)
+        
+    - 사용 예시 - Statistical Machine Translation(SMT)
+        
+        한국어 → 영어 문장
+        
+        ![image.png](attachment:16be7b56-5b67-4b37-b3b1-2e44cd472aa1:image.png)
+        
+    - SMT의 한계
+        - 구조적 복잡성
+        - 많은 수작업
+        - 언어 별 자원 구축 필요
+        
+        → 유지 및 확장에 어려움 존재
+        
+        ⇒ NMT(Neural Machine Translation)로
+        
+    
+2. **Seq2Seq (Sequence-to-sequence)** : 두 개의 RNNs로 이루어짐
+    - NMT
+        
+        : 인공 신경망을 이용해 기계 번역을 수행하는 방법
+        
+    - Seq2Seq
+        
+        : Translation은 입력과 출력의 길이가 다를수 있음
+        
+        → 2개의 LSTM을 이용하자
+        
+        한 개는 입력 시퀀스를 한 타임스텝씩 읽어 고정된 차원의 큰 벡터 표현을 얻기 (Encoder)
+        
+        한 개는 앞에서 얻은 벡터로부터 출력 시퀀스 생성 (Decoder)
+        
+    - Architecture
+        
+        ![image.png](attachment:ecc9ebed-6dfa-4d2d-90d6-78c2feb1cd57:image.png)
+        
+    - 그 외의 다양한 적용
+        1. 요약 : 긴 문서를 짧은 문장으로
+        2. 대화 : 발화를 기반으로 맥락에 맞는 대답을
+        3. 코드 생성 : 자연어인 설명이나 명령으로 프로그래밍 코드 혹은 쿼리를
+    - 학습 수행
+        
+        : Seq2Seq 는 인코더와 디코더가 하나의 통합 네트워크로 연결되어 있음
+        
+        디코더에서 발생한 오차는 역전파를 통해 입력을 처리한 인코더까지 전달되어 전체 네트워크가 End-to-End 로 동시에 최적화됨
+        
+        ↓
+        
+    - Teacher Forcing
+        
+        : 학습 초반에는 예측능력이 떨어져 학습이 불안정할 수 있기 때문에, 정답 단어를 디코더 입력으로 강제로 넣어줘서 학습시키는 방법
+        
+    - 토큰 출력 방법
+        - Greedy Inference
+            
+            : 각 단계에서 가장 확률이 높은 단어를 선택
+            
+            but, 출력하면 되돌리기가 불가능
+            
+        - Beam Search
+            1. 매 단계마다 k개의 가장 유망한 후보 유지
+            2. 후보가 <EOS>에 도달하면 완성된 문장으로 리스트 추가
+            3. <EOS>문장이 충분히 모이면 탐색 종료
+            4. 각 후보들의 점수를 로그 확률의 합으로 구해 최종 선택
+            
+            ![image.png](attachment:ce98e8db-9947-44af-af52-4b79c617a3dc:e54dfa4a-d8f8-4b4c-a592-4ded371c4200.png)
+            
+        
+3. **Attention**
+    - Seq2Seq 의 한계 : **the bottleneck problem**
+        
+        : 인코더는 입력 문장 전체를 하나의 벡터로 요약 → 마지막 hidden state에 문장의 모든 의미 정보가 담김
+        
+        → 고정 길이 벡터 하나에 모든 문장의 의미를 압축하다보니 **정보 손실**이 발생
+        
+    - **Attention**
+        
+        얘는 디코더가 단어를 생성할 때 인코더 전체가 hidden state 중 **필요한 부분을 직접 참조**할 수 있도록 함
+        
+        → 매 타임스텝마다 어떤 단어/구절에 집중할지를 가중치로 계산해 bottleneck 문제를 완화
+        
+        - **효과**
+            1. NMT 성능 향상 : 필요한 부분에만 집중할수 있어서
+            2. Bottleneck Problem 해결
+            3. Vanishing Gradient Problem 완화 : 멀리 떨어진 단어도 직접 연결하게 해줌
+            4. 해석 가능성
+                
+                 : attention 분포를 보면 decoder가 어떤 단어를 생성할때 어느 부분에 집중했는지 확인가능 → 모델이 내부적으로 참고한 근거(의사결정 과정)을 파악, 해석 할 수 있음
+                
+            5. 정렬
+                
+                : 기계번역은 전통적으로 단어 alignment 모델을 따로 학습해야 했는데, attention을 통해 decoder가 필요한 입력 단어에 자동으로 집중하기 때문에 단어와 단어 간의 매핑 관계를 자연스럽게 학습함
+                
+
+# Transformer
+
+1. **Self-Attention**
+    
+    > RNN 이 꼭 필요할까?
+    > 
+    
+    RNN 의 한계점 
+    
+    - 장기 의존성 : 시퀀스 길이만큼 단계를 거쳐야 해서 기울기 소실 혹은 폭발 문제가 발생해서 장기 의존성 학습이 어려움
+    - 병렬화 : 순차적인 연산이므로 병렬화 불가능 → 병렬 연산에 강한 GPU 활용을 어렵게 해서 대규모 데이터 학습에 비효율적
+    
+    > Attention은?
+    > 
+    
+    Attention 은 각 단어의 표현은 query로 두고, value 집합으로부터 필요한 정보를 직접 불러와 결합
+    
+    → 이 메커니즘을 encoder-decoder 간이 아닌 **한 문장 내부에서 적용**하면 어떨까
+    
+    ↓
+    
+    **Self-Attention** : 
+    
+    1. 순차적으로 처리해야하는 연산 수가 시퀀스 길이에 따라 증가하지 않음
+    2. 최대 상호작용 거리 =O(1) → 모든 단어가 각 층에서 직접 상호 작용함
+    - **Self-Attention 과정**
+        1. 각 단어를 Query, Key, Value 벡터로 변환한다
+            - Query 벡터 : 단어 i가 다른 단어로부터 어떤 정보를 찾을지를 정의하는 벡터
+            - Key 벡터 : 단어 i가 자신이 가진 정보의 특성을 표현하는 벡터
+            - Value 벡터 : 실제로 참조되는 정보 내용을 담고 있는 벡터
+        2. Query, Keys 간의 유사도를 계산해, softmax로 확률분포를 구한다.
+        3. 각 단어의 출력을 Values의 가중합으로 계산한다
+        
+        > 이렇듯 단어 간 관계를 효율적으로 잡아내는 강력 메커니즘이지만 한계가 있다.
+        > 
+        1. 순서 정보 부재 : 단어 간 순서 고려 안함
+        2. 비선형성 부족 : 선형 결합에 불과하므로 복잡한 패턴이나 깊은 표현력 담기 어려움
+        3. 미래 참조 문제 : 모든 단어를 동시에 보므로, 생성되지 않아야 할 미래 단어를 참조함
+    - **한계 해결**
+        1. Positional Encoding
+            
+            : 각 단어 위치 i를 나타내는 위치 벡터 정의, 단어 임베딩 값에 더해 최종 입력으로 사용
+            
+            - Sinusoidal Position Encoding
+            - Learned Absolute Position Embedding
+            
+            → 순서 정보 부재 해결
+            
+        2. Feed-Forward Network 추가
+            
+            : 각 단어 출력 벡터에 추가해서 만든 표현을 깊고 비선형적인 표현으로 확장
+            
+            → 비선형성 부족 해결
+            
+        3. Masked Self_Attention
+            
+            : Attention Score를 계산할 때, 미래 단어에 해당하는 항목을 -무한대로 설정해, 계산을 수행할 때 반영되지 않도록
+            
+            → 미래 참조 문제 해결
+            
+2. **Transformer**
+    
+    : encoder-decoder 구조로 설계된 신경망 모델
+    
+    encoder : 입력 문장을 받아 의미적 표현으로 변환 수행
+    
+    decoder : 인코더의 표현과 지금까지 생성한 단어들을 입력받아 다음 단어를 예측
+    (언어모델과 같은 방식)
+    
+    - Multi-Headed Attention
+        
+        : 여러 Attention Head를 두어 다양한 관점에서 동시에 정보 파악
+        
+        ![image.png](attachment:f081e49a-5d19-4c53-9859-f4a9ad4983f2:image.png)
+        
+    - Scaled Dot Product
+        - Query와 Key의 차원이 커질수록, 두 벡터의 내적 값도 커짐
+            
+            → 이 값이 너무 크면 softmax 함수가 출력이 뾰족해져 미세한 변화에도 큰 차이 발생
+            
+            ![image.png](attachment:167d652a-51de-47c8-a8cc-fb85bc3ecdbd:image.png)
+            
+        - 내적 값을 그대로 사용하지 않고 나눠서 **스케일 조정**
+        - 값이 안정적으로 분포되어 학습이 빠르고 안정적으로 진행됨
+            
+            ![image.png](attachment:af032946-6810-4474-8c14-667d62395435:image.png)
+            
+    - Residual Connection
+        
+        : 기존 입력과의 차이만 학습하도록 함
+        
+    - Layer Normalization
+        
+        : 각 레이어 단위에서 hidden vector 값을 정규화해, 안정적이고 빠른 학습을 돕는다
+        
+    - Decoder
+        
+        : **여러 개의 decoder 블록** 들을 쌓아 올려서 만든 구조임 
+        
+        - Masked Self-Attention (Multi-Head)
+        - Add & Norm (Residual Connection & Layer Normalization)
+        - Feed-Forward Network
+        
+        → 언어 모델처럼 단방향 문맥만 활용
+        
+    - Encoder
+        
+        : 양방향 문맥을 모두 활용 가능
+        
+        decoder와의 차이점은 Self-Attention에서 masking을 제거한것
+        
+    - Encoder-Decoder
+        
+        : decoder는 encoder의 출력 표현을 참조하는 Cross-Attention을 추가하여 입/출력을 연결
+        
+    - Cross-Attention
+        
+        : Self-Attention과는 다르게, Query는 decoder에서, Key와 Value는 encoder에서 가져옴
+        
+    
+
+# 사전 학습 기반 언어 모델
+
+1. **사전학습**
+    
+    : 대규모 데이터 셋으로 모델이 데이터의 일반적 특징과 표현을 학습하도록 하는 과정
+    
+2. **Encoder 모델**
+    
+    > BERT ( = Masked Language Model)
+    > 
+    - BERT 학습 방법
+        1. Masked LM(MLM)
+            - 입력 토큰의 15%를 무작위로 선택
+            - [MASK] 토큰 치환(80%), 랜덤 토큰 치환(10%), 그대로 두기(10%)
+            
+            → 모델이 마스크된 단어에만 집중하지 않고, 다양한 문맥 표현을 학습해 더 강건한 표현을 학습하도록 함
+            
+        2. Next Sentence Prediction (NSP)
+    - 다운스트림 태스크
+        
+        : BERT 는 이렇게 두 가지 태스크를 동시에 학습
+        
+        - Sentence Level
+            - 두 문장 관계 분류 태스크 : MNLI & QQP
+            - 단일 문장 관계 분류 태스크 : SST2
+        - Token Level
+            - QA 태스크 : SQuAD
+            - 개체명 인식 : CoNLL 2003 NER
+        
+        ![image.png](attachment:de70bfaa-cdba-42e1-b1c0-1d52badaf3e1:image.png)
+        
+        ![image.png](attachment:2f3ab453-8555-4a00-8c9e-e57109d3e001:image.png)
+        
+        ![image.png](attachment:9d8ee8f1-b0a9-40f3-b0f7-f212650eac7f:image.png)
+        
+3. **Encoder-Decoder 모델**
+    
+    : 지금 많이 안씀.
+    
+4. **Decoder 모델**
+    - Finetuning Decoder
+    - GPT-1
+    - GPT-2
+5. I**n-Context Learning**
+    - GPT-3 ( 여기부터 거대 언어 모델 = LLM )
+    - Chain-of-Thought prompting
+        
+        : In-Context Learning 의 발견으로 인해, Prompt의 중요성이 대두됨 
+        
+        → 이를 해결하기 위해 등장. 논리적인 사고 단계를 거쳐 최종 답을 도출하도록 유도하는 기법
+        
+    - Zero-Shot Chain-of-Thought prompting
+        
+        근데 위에건 또 few-shot 예시가 없으면 추론 과정이 X → 성능 저하 발생
+        
+        → 질문 뒤에 “Let’s think step by step” 이라는 한 문장 추가, 모델 스스로 추론 하도록
