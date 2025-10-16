@@ -1,0 +1,549 @@
+# 실습
+
+### 워드 임베딩
+
+- Tokenizing
+    
+    : 자연어 처리의 첫 과정, 텍스트 데이터를 모델이 이해할 수 있는 숫자 형태로 바꿔주는 과정
+    
+
+[2_1_tokenize_embedding.ipynb](attachment:9e19607b-1ae1-44dd-9548-cddfe6dd83ab:2_1_tokenize_embedding.ipynb)
+
+핵심 목표는 **네이버 영화 리뷰 데이터(NSMC)를 사용하여 'WordPiece' 방식의 맞춤형 토크나이저(Tokenizer)를 만들고 테스트**하는 것입니다.
+
+---
+
+### tahap 1: 데이터 준비 (다운로드 및 정제)
+
+첫 번째와 두 번째 코드 셀에서는 모델 학습에 필요한 데이터를 준비합니다.
+
+- **데이터 다운로드 (`wget`)**:Python
+    
+    ```python
+    !wget https://github.com/e9t/nsmc/raw/master/ratings.txt
+    ```
+    
+    이 명령어는 네이버 영화 리뷰 데이터셋(NSMC)을 다운로드합니다. 이 파일에는 영화 리뷰 텍스트와 해당 리뷰가 긍정인지 부정인지 나타내는 라벨(1: 긍정, 0: 부정)이 들어있습니다.
+    
+- **데이터 로드 및 정제 (`pandas`)**:Python
+    
+    ```python
+    import os
+    import pandas as pd
+    # ... (파일 읽는 로직) ...
+    df = pd.read_table((os.getcwd() + '/' + file), encoding='utf-8')
+    df = df.dropna(how='any')
+    # ...
+    df.head()
+    ```
+    
+    1. 다운로드한 `ratings.txt` 파일을 **pandas DataFrame** (표 형태의 데이터 구조)으로 불러옵니다.
+    2. `df.dropna(how='any')` 코드를 통해 리뷰 텍스트나 라벨이 비어있는 행(결측치)을 모두 제거합니다. 데이터에 빈 값이 있으면 학습 과정에서 오류가 발생할 수 있기 때문에 꼭 필요한 과정이에요.
+    3. `df.head()`로 상위 5개 데이터를 출력하여 데이터가 어떻게 생겼는지 확인합니다. (`id`, `document`, `label` 세 개의 열로 구성되어 있네요!)
+
+---
+
+### tahap 2: 토크나이저 학습을 위한 데이터 전처리
+
+세 번째 코드 셀에서는 토크나이저를 학습시키기 좋게 데이터를 가공합니다.
+
+Python
+
+```python
+with open((os.getcwd() + '/naver_review.txt'), 'w', encoding='utf-8') as f:
+  f.write('\n'.join(df['document']))
+```
+
+토크나이저 학습에는 순수한 텍스트 파일이 필요합니다. 그래서 위 코드는 pandas DataFrame에서 리뷰 텍스트가 담긴 `document` 열의 내용만 모두 뽑아내어 `naver_review.txt`라는 새로운 파일로 저장합니다. 각 리뷰는 줄바꿈(`\n`)으로 구분됩니다.
+
+---
+
+### tahap 3: WordPiece 토크나이저 학습 🧠
+
+네 번째와 다섯 번째 셀이 이 노트북의 핵심입니다. 여기서 직접 토크나이저를 만듭니다.
+
+- **토크나이저 초기화**:Python
+    
+    ```python
+    from tokenizers import BertWordPieceTokenizer
+    tokenizer = BertWordPieceTokenizer(
+        lowercase=False,
+        strip_accents=False,
+    )
+    ```
+    
+    Hugging Face의 `tokenizers` 라이브러리에서 `BertWordPieceTokenizer`를 가져와 초기화합니다. **WordPiece**는 'subword' 단위로 단어를 나누는 똑똑한 방식이에요. 예를 들어 'student'라는 단어를 'st'와 '##udent'처럼 더 작은 단위로 쪼갤 수 있죠. 이렇게 하면 처음 보는 단어가 나와도 대처하기 쉽고, 단어장의 크기도 효율적으로 관리할 수 있습니다.
+    
+- **토크나이저 학습 (`train`)**:Python
+    
+    ```python
+    tokenizer.train(
+        files = 'naver_review.txt',
+        vocab_size = 30000,
+        min_frequency = 2,
+        special_tokens = ['[PAD]', '[UNK]', '[CLS]', '[SEP]', '[MASK]'],
+        # ...
+    )
+    ```
+    
+    앞서 만든 `naver_review.txt` 파일을 가지고 토크나이저를 학습시킵니다. 중요한 설정값들은 다음과 같아요.
+    
+    - `files`: 학습에 사용할 텍스트 파일.
+    - `vocab_size`: 단어장의 크기를 30,000개로 제한합니다.
+    - `min_frequency`: 텍스트에서 최소 2번 이상 나타난 단어만 단어장에 포함시킵니다. 오타나 희귀한 단어를 걸러내는 역할을 하죠.
+    - `special_tokens`: NLP 모델에서 특별한 의미를 갖는 토큰들을 미리 지정합니다.
+        - `[PAD]`: 문장 길이를 맞추기 위한 빈 토큰
+        - `[UNK]`: 단어장에 없는 단어(Unknown)
+        - `[CLS]`, `[SEP]`, `[MASK]`: BERT 같은 모델에서 문장의 시작, 구분, 마스킹 등을 위해 사용되는 토큰
+
+---
+
+### tahap 4: 생성된 단어장(Vocabulary) 확인
+
+여섯 번째 셀에서는 학습된 단어장의 일부를 살펴보며 잘 만들어졌는지 확인합니다.
+
+Python
+
+```python
+vocab = tokenizer.get_vocab()
+print("vocab size : ", len(vocab))
+print(sorted(vocab, key=lambda x: vocab[x])[:20])
+```
+
+`tokenizer.get_vocab()` 함수로 학습된 단어장을 딕셔너리 형태로 가져올 수 있습니다. 출력 결과를 보면 우리가 설정한 `special_tokens`와 자주 쓰이는 특수문자들이 단어장 앞부분에 위치한 것을 확인할 수 있어요. 단어장 크기도 목표했던 30,000개로 잘 만들어졌네요!
+
+---
+
+### tahap 5: 토크나이저 성능 테스트
+
+마지막으로, 잘 만들어진 토크나이저가 새로운 문장을 어떻게 처리하는지 테스트합니다.
+
+Python
+
+```python
+text = "|'m a student of SSAFY!"
+encoded = tokenizer.encode(text)
+
+print(encoded.ids)
+# [96, 11, 81, 69, 15444, 24886, 16071, 10280, 55, 3476, 3690, 3940, 4150, 5]
+
+print(encoded.tokens)
+# ['|', "'", 'm', 'a', 'st', '##ud', '##ent', 'of', 'S', '##S', '##A', '##F', '##Y', '!']
+
+print(tokenizer.decode(encoded.ids))
+# | ' m a student of SSAFY!
+```
+
+1. `tokenizer.encode(text)`: 주어진 문장을 토큰화합니다.
+2. `encoded.ids`: 문장이 단어장에 있는 **숫자 ID의 배열**로 변환된 결과입니다. 모델은 이 숫자들을 입력으로 받게 됩니다.
+3. `encoded.tokens`: 문장이 어떻게 **subword 단위로 쪼개졌는지** 보여줍니다. 예를 들어, 'student'가 `'st'`와 `'##udent'`로 나뉜 것을 볼 수 있죠? `##`는 앞 토큰에 이어서 붙는다는 의미입니다.
+4. `tokenizer.decode(encoded.ids)`: 숫자 ID 배열을 다시 원래의 문장으로 복원합니다. 토큰화와 복원이 잘 되는 것을 확인할 수 있습니다.
+
+### 결론
+
+이 노트북은 텍스트 데이터를 다운로드하고, 모델 학습에 맞게 전처리한 후, `BertWordPieceTokenizer`를 사용해 자신만의 단어장을 만들어내는 전체 과정을 훌륭하게 보여줍니다. 이렇게 만들어진 토크나이저는 이제 감성 분석이나 다른 NLP 모델을 학습시킬 때 텍스트를 숫자로 변환하는 데 바로 사용할 수 있습니다.
+
+# 이미지 딥러닝
+
+### CNN
+
+1. **FCN : Fully-Connected Layer, 완전 연결충**
+    
+    → 입력 받아서 출력으로 변환하는 신경망의 기본 모듈
+    
+2. **CNN : Convolution Layer, 합성곱 레이어**
+    
+    → 입력 이미지를 필터와 연산하여 특징 맵 (feature map)을 뽑아내는 모듈
+    
+    1차원으로 변환하는 FCN과 달리 3차원 구조를 그대로 보존하면서 연산
+    
+    ⇒ Convolution : 필터를 이미지 상에서 이동시키면서 내적을 반복 수행, 내적으로 구한 모든 값을 출력 제공 - ?
+    
+    주의 ! : Filter 는 항상 입력의 깊이/ 채널 측과 동일한 차원이어야 함
+    
+    ![image.png](attachment:da37b941-c1e8-476d-8f0b-e88a7b6dc9e9:image.png)
+    
+    ![image.png](attachment:6932b602-5adb-41c3-8404-85e978fe5e98:image.png)
+    
+    입력 대비 출력의 공간 해상도가 줄어듦
+    
+    출력해상도 = 입력 해상도 - 필터 해상도 + 1   ex) 32 - 5 + 1 = 28
+    
+    → 비선형 블록(Conv[Linear] + ReLU[비선형 변환])과 함께하면 모델링 파워 향상
+    
+    ![image.png](attachment:79421910-edc8-476f-97e6-aa9dfacaff27:image.png)
+    
+    - 중첩 : CNN 레이어는 이미지의 작은 부분인 ‘지역 정보’를 추출하는데 유리한 설계
+        
+        but, 이미지 활용하는 다양한 작업에서 이미지 전체 의미 파악 필요
+        
+        ↓
+        
+    - 수용영역 : CNN이 이미지를 처리하면서 한 번에 볼 수 있는 영역의 크기 (네트워크의 시야)
+        
+        → 네트워크가 깊어질 수록 수용 영역도 넓어짐
+        
+    
+    ![image.png](attachment:d6d2d24a-f283-478f-8c26-f0303619ffc5:image.png)
+    
+    - 풀링 : 효율적 연산 및 위치 변화의 강건성 확보
+        
+        → CNN 레이어의 출력을 줄여 연산 효율성을 확보
+        
+        - 위치 변화 강건성 : 입력 내 객체 위치가 다소 변해도 동일한 출력을 제공
+            
+            ![image.png](attachment:0c5c030c-4a6e-47f8-80b9-f249d8c9976f:image.png)
+            
+        - 맥스풀링 : 정해진 커널 사이즈로 이미지를 나누어 각 영역 내 가장 큰 값을 선택하는 연산
+            
+            ![image.png](attachment:b9dde13d-ef66-4bd2-ade7-2be2a0e21879:image.png)
+            
+    
+    - 스트라이드 합성곱 : 풀링 한계 개선
+        
+        → 필터를 스트라이드 값만큼 이동한 후 출력 연산
+        
+        ⇒ 풀링 처럼 입력 해상도를 줄임 (연산 효율과 위치 강건성)
+        
+
+### **CNN 기반 모델 변천사 (중요!)**
+
+![image.png](attachment:3fbda6d3-77e8-4830-9957-6a3dc0f094c5:image.png)
+
+1. **AlexNet**
+    
+    : 5개의 합성곱 계층과 3개의 완전연결 계층으로 구성된 CNN 모델
+    
+    ![image.png](attachment:3b22ff09-5045-4e83-ba9c-02f58c7f67ee:image.png)
+    
+    - 출력 사이즈 계산법[Conv1]
+        
+        : 출력 채널 수 = 현재 레이어의 필터(커널) 개수
+        
+        ![image.png](attachment:4e8f09bc-51e6-4ddb-8d0b-10d19b691c35:image.png)
+        
+    - 출력 활성 메모리(KB)
+        
+        : 메모리 사용은 초기 레이어에 집중
+        
+        ![image.png](attachment:645ef7a7-9e59-442a-b20d-c39531ce2c16:image.png)
+        
+    - 상수K(파라미터 수)
+        
+        : 모델 상수(K)는 연결층 레이어에 집중
+        
+        ![image.png](attachment:333b4bc8-2079-4d17-9eed-5a70c83fcf2d:image.png)
+        
+    - FLOPs(연산량)
+        
+        : 합성곱에서 주로 발생
+        
+        ![image.png](attachment:62756e83-8e0e-4e25-9063-936e8960a077:image.png)
+        
+2. **VGGNet**
+    
+    : 5개의 합성곱 블록 + 맥스 풀링 구조
+    
+    - 특징
+        - 단순함 + 깊이의 강력한 성능을 보임
+        - 단순 설계로 모델 해석에 이상적
+        - 특징 추출기, 전이 학습에 강력한 베이스라인
+            
+            ( 파라미터가 많고 연산량 요구가 매우 큼 )
+            
+    
+    ![image.png](attachment:00da1a0f-8075-4994-acfa-df69baa2d99c:image.png)
+    
+    - VGG의 레슨
+        
+        : 작고 단순한 필터를 깊게 쌓으면 성능 ↑ 
+        
+    - VGG의 디자인 룰
+        
+        ![image.png](attachment:1440589a-50f7-4423-8f9d-455112881477:image.png)
+        
+3. **ResNet ( Residual Block )**
+    
+    : 합성곱 블록과 잔차 블록, 블록 입력을 그대로 출력에 더해줌
+    
+    - **배치 정규화 방식**으로 10+ 레이어 학습 기능
+    - 작은 모델의 성능은 최소한 누릴 수 있도록 추정값을 후속 레이어에 제공하여 성능 보장
+    - 입력 X가 두 경로로 나뉘어 전달되어, 마지막에 두 값 더함
+    - 연산 효율을 위해 보틀넥 잔차구조를 도입하여, **더 깊은 모델을 더 적은 연산으로**
+    - **Stem 구조**로 기존 모델의 효율성 레시피를 잘 활용
+    
+    < 잘 알려진 Resnet 학습 레시피 >
+    
+    ![image.png](attachment:c84fda6a-3be8-4d10-994b-eb9497525961:image.png)
+    
+    - 최종 요약
+        - 깊은 모델 학습을 위한 중요한 전진 (100+레이어 학습가능)
+        - 깊은 모델의 강력함을 다시 확인
+        - 제안 당시 모든 벤치마크에서 최고 성능 달성
+        - 지금도 CNN 기반 구조 중 가장 활발하게 활용
+    
+4. **MobileNet**
+    - 목표 : 모바일/임베디드 환경에서 구동 가능
+    - 공간과 채널을 두 단계로 분리하여 처리
+        
+        ![image.png](attachment:e4b59194-10c4-4200-80af-237484860602:image.png)
+        
+    
+    ![image.png](attachment:d89fccc0-ab78-42a4-a07f-44a157e61312:image.png)
+    
+
+# 다양한 신경망 모델
+
+### CNN의 한계
+
+1. **장점 : 합성곱 구조의 특성**
+    
+    ![image.png](attachment:ef5869e5-d255-422c-a872-6b98b60a2fa5:image.png)
+    
+2. **한계**
+    - CNN은 데이터 순서를 무시
+        
+        ![image.png](attachment:b0bb2858-8ffd-460a-acc7-619e83a53e96:image.png)
+        
+    - 긴 거리 의존성 고려 부족
+        
+        ![image.png](attachment:a0be4c23-fb3d-42d7-b939-d09a28941426:image.png)
+        
+    - 픽셀 단위 복원 한계
+        
+        ![image.png](attachment:1c44711c-70aa-43b5-9823-c2d49f972370:image.png)
+        
+    
+
+### 시퀀스 데이터 처리 : RNN
+
+1. **RNN** : 순차적 데이터를 처리하기 위해 고안된 신경망 구조
+    - 이전 단계 데이터를 hidden state로 다음 단계로 전달하므로, 시간/순서의 흐름 반영 가능
+    - 문장, 음성신호, 센서데이터 등 시계열 데이터 처리에 관한 강력한 귀납 편향 제공
+    
+2. **단순 RNN의 한계**
+    
+    : 기울기 폭발 혹은 소실 발생
+    
+    → 대안 모델 : LSTM
+    
+
+### 긴거리 의존성 : 어텐션/ViT
+
+1. **Self-Attention**
+    
+    : 하나의 입력 안에서 패치 정보(쿼리/키/값) 정의
+    
+    : 같은 이미지 내 유사도 (쿼리와 키 간 유사도) 반영
+    
+    : 입력 내부 패치 간 연결망 구축
+    
+    ![image.png](attachment:6720ef07-21cb-45d3-819f-1ce361f293a6:image.png)
+    
+    > 관련 높은 패치/관련 낮은 패치 정보를 최종 결정에 반영하자
+    > 
+    
+2. **Cross-Attention**
+    
+    : 둘 이상의 이종 데이터에서 패치 정보(쿼리/키/값)를 정의
+    
+    이종 데이터 간 유사도 (쿼리와 키 간 유사도) 반영
+    
+    ![image.png](attachment:e7132bd8-1f35-459c-91b7-50d0de108b9f:image.png)
+    
+
+1. **ViT 위치 인코딩**
+    
+    ![모델 별 특성 정리](attachment:3a8a5ffa-efac-4088-affe-9461946bd858:image.png)
+    
+    모델 별 특성 정리
+    
+    - **패치 순서(위치) 정보 제공** : 각 입력 토큰에 위치 정보를 담은 벡터 추가
+        - 학습가능한 위치 인코딩 : 데이터에 알맞게 최적화
+        - 사인파 인코딩 : 데이터에 알맞게 최적화
+        - 상대 위치 인코딩 : 절대 위치가 아닌 상대적 위치 인코딩
+    - **인코더 내부 구조**
+        - 정규화 - 다중헤드 어텐션 - 정규화 - 연결층으로 구성
+        - 인코더 L개 통과
+    - **전역 관계 학습**
+        - CNN : 지역적 영역에서 수용영역을 넓혀 전역 이해
+        - ViT : 수용영역을 넓히지 않아도 전역 맥락 이해 가능
+    - **처리 과정**
+        1. 이미지를 이미지 토큰 집합으로 변환 : 위치 인코딩으로 패치 토큰 순서를 학습에 반영
+        2. ViT 인코더 : 정규화 - 다중헤드 어텐션 - 정규화 - 연결층 으로 구성
+        3. 최종 출력 : MLP head - 최종예측 수행
+    
+    ![image.png](attachment:ac8ec2e2-3c86-4ffe-8914-bd5e7baca116:image.png)
+    
+    - **유의점**
+        - 학습 기술이 중요! → 막대한 상수 보유, 정규화 기법 / 데이터 증강 기술 중요!
+        
+        → 증류학습 기술이 효과적
+        
+        ![image.png](attachment:8e241173-54d7-4a28-be78-416d98fd23a5:image.png)
+        
+    
+    ![image.png](attachment:b2106b4b-6261-4bf5-9b23-e95a54674a6b:image.png)
+    
+    Swin 계열은 검출/분할과 같은 화소별, 공간 이해에서 좋은 성능을 보임
+    
+    ![image.png](attachment:eeaa60cb-f226-41d0-91b2-2189c818ee14:image.png)
+    
+    ![image.png](attachment:0130ab86-5f6c-4e45-a1c7-63170ce4753e:image.png)
+    
+    ![image.png](attachment:ffd9b9b3-4094-497b-9cbf-12162b371da7:image.png)
+    
+    - **ViT 장단점**
+        
+        장점 : 
+        
+        - 전역 문맥을 한번에 고려 가능
+        - 시계열/시퀀스 데이터의 경우, 순서 고려 가능 (위치 인코딩)
+        
+        단점 : 
+        
+        - 대규모 학습 자원 필요
+        - 학습 데이터 규모가 작을 경우, CNN보다 성능 저하
+        - 한번에 고려할 수 있는 토큰이 제한적
+        
+        활용 :
+        
+        - 이미지 분류/탐지/분할/생성에서 모두 SoTA 성능 달성
+        - 멀티모달 모델에서 기준 아키텍서
+        - 기준모델에 활용 중
+
+# 이미지 모델 학습 전략
+
+1. **모델 구성**
+    - 활성화 함수 : 입력 신호의 총합을 출력 신호로 변환하는 함수
+        
+        역할 : 신경망에 비선형성 부여 → 복잡한 패턴 학습 가능  ←  없다면, 단순 선형모델과 동일
+        
+        ⇒ 활성화 함수 특성에 따라 학습 안정성과 성능이 크게 좌우
+        
+        - Sigmoid : 0-1 사이 값으로 출력 값을 제어 → 확률 값처럼 해석 가능
+        - Tanh : 데이터가 중심(0)을 기준으로 대칭 → 학습 안정성 ↑
+        - ReLU : 양의 영역에서 포화되지 않음
+            
+            → 기울기 소실 문제 크게 감소, 계산 효율성 높음, 학습 속도 빠름
+            
+            문제점 : 죽은 뉴런 문제, 0을 기준으로 비대칭
+            
+        - Leaky ReLU : ReLU의 모든 장점 수용하면서, 죽지 않는 뉴런 문제해결
+            
+            문제점 : 음수 영역 기울기 값(0.01) 설정의 임의성, 0중심 대칭 아님, 항상 ReLU보다 우세x
+            
+        - ELU : ReLU의 모든 장점 수용하면서, 평균 출력이 0근처에 위치, 음수 영역에서의 포화 구간 제공
+            
+            → 기울기 소실은 막고, 왜곡문제도 해결
+            
+            문제점 : 계산 복잡성 증가, 하이퍼파라미터 a 설정 필요
+            
+        
+        ![image.png](attachment:ba61c29c-f600-4b1d-82ec-6d769e805754:image.png)
+        
+
+- **데이터 전처리**
+    - 데이터 형식 통일
+        - 이미지 조건을 일치 : 학습/검증/테스트에 모두 동일하게 적용
+        - 일반적 정규화 방식
+        - 색상 채널 통일 단계 예시
+    - 모델별 전처리 방식 예시
+        - AlexNet : 평균 이미지를 빼기
+        - VGG : 채널별 평균 빼기
+        - ResNet : 평균 빼기 + 채널별 표준편차로 나누기
+
+- 모델 상수 초기화 아이디어
+    1. 모든 가중치와 편향을 0으로 초기화
+    2. 임의(랜덤) 초기화 : 깊지 않은 모델에서 동작하는 전략
+    3. 자비에(Xavier) 초기화 : 가중치 초기 분포의 분산을 입력 차원으로 맞춤
+    4. 허(He) 초기화 : 자비에 + ReLU ?
+
+- 모델 정규화
+    
+    > 데이터 처리/초기화 이후 학습 가능
+    > 
+    
+    학습과정에서 오차가 줄지만, 검증 오차는 오히려 오른다면 정규화를 통해 해결해보자
+    
+    1. 가중치 감소
+    2. 드롭아웃 : 학습과정에서 일부 뉴런을 확률적으로 끔(0으로 설정)
+        
+        → 매 학습 스텝마다 다른 네트워크 구조가 샘플링됨
+        
+        장점 : 과적합 방지 → 일반화 성능 ↑ , 간단하고 강력
+        
+        단점 : 학습시간 증가, 최적의 드롭 비율을 찾는 것이 중요, 모델에 따라 비선호
+        
+        문제점 : 학습때보다 출력 크기가 2배
+        
+        해결책 : Inverted 드롭아웃, 기존 방식 사용
+        
+
+### 학습 안정성 전략
+
+1. 학습 비율 조정
+    
+    > 학습 비율은 가장 중요한 하이퍼상수
+    > 
+    - 학습률 계단식 변경 : 일정 에폭(Epoch)이 지날 때 마다 계단식으로 줄이는 방식
+        
+        에폭 : 학습 데이터를 1번 다 외움을 의미
+        
+        단점 : 변경지점을 여러 개 선정, 복잡함
+        
+        해결 : 코사인 파형에 따른 변경, 직선을 따라 변경, 역제곱 꼴, 일정값 유지
+        
+        학습 종료 : 빠른 종료 기법으로 과적합 방지
+        
+    
+2. 하이퍼파라미터 선정
+    
+    ![image.png](attachment:fed6045d-605d-4adf-93a6-7838ea9a31b1:image.png)
+    
+    - 주요 하이퍼파라미터
+        
+        ![image.png](attachment:5c41a0a3-ed16-4ba6-81e3-9a63658e82b2:image.png)
+        
+        - 하이퍼파라미터 값 탐색 방식
+            - 그리드 탐색
+            - 랜덤 탐색
+    - 체크리스트
+        1. 데이터 입력 등 문제가 없을까? → 초기 손실값 확인하자
+        2. 학습률과 초기값 확인 → 작은 샘플을 활용, 과적합하자
+            1. 손실이 안 줄면
+                
+                ![image.png](attachment:9f3dc2be-52b5-4b3a-8df2-31e32e43542e:image.png)
+                
+            2. 손실이 폭발하면
+                
+                ![image.png](attachment:11d8a199-f29d-460e-9057-6299e07a5de3:image.png)
+                
+        3. 2에서 얻은 구조, 최적화 툴 활용, 학습률을 찾자
+        4. 3에서 얻은 후보 학습률 + 후보 가중치 변형 방식 중 좋은 조합 탐색
+            
+            ![image.png](attachment:695f6696-c157-4644-b5a1-4790552a8e4c:image.png)
+            
+        5. 4에서 얻은 좋은 조합들을 활용, 10-20 에폭까지 추가 학습
+            
+            학습률 변경은 적용 안함
+            
+            ![image.png](attachment:7708ef44-6457-4e7d-8ecb-f400f3ae3d43:image.png)
+            
+        6. 학습률에 따른 손실곡선 관찰
+            
+            ![image.png](attachment:1dcbda16-70b1-43f8-9a1a-a7a4bd06a5e7:image.png)
+            
+            ![image.png](attachment:2224ffa9-1d0e-4785-a390-6cae93f8438f:image.png)
+            
+            ![image.png](attachment:0f46a66f-084d-4b53-b60f-78ae6d2eac61:image.png)
+            
+            ![image.png](attachment:b6c7e7d2-545e-46d7-81db-7767ede930a5:image.png)
+            
+            학습률에 따른 정확도 곡선
+            
+            ![image.png](attachment:f98f5577-52e4-4221-bc20-9f718c5df58c:image.png)
+            
+            ![image.png](attachment:ae6bf3fa-4d3c-4a81-826e-93f2543b8487:image.png)
+            
+            ![image.png](attachment:4e18653f-16c1-4f9f-a82c-b464e886a84f:image.png)
