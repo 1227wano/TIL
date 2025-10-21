@@ -1,0 +1,462 @@
+# Upstage API를 사용하여 LLM(대규모 언어 모델)과 통신하는 방법
+
+[2_2_Synthetic_Data.ipynb](attachment:5db6304f-4d1e-4b55-983b-04966649a356:2_2_Synthetic_Data.ipynb)
+
+## 1. 환경 설정 (셀 1-5)
+
+Notebook의 첫 번째 부분은 API를 사용하는 데 필요한 환경을 설정합니다.
+
+- **Google Drive 마운트 (셀 2):**
+Google Colab 환경에서 Google Drive에 접근할 수 있도록 마운트합니다. API 키와 같은 민감한 정보를 파일로 저장하고 불러오기 위해 사용됩니다. `base_path` 변수에 키 파일을 저장할 경로를 지정하고, `!mkdir -p` 명령어로 해당 폴더가 없으면 생성합니다.
+- **API 키 저장 (셀 3):**`!echo` 명령어를 사용해 Upstage API 키를 Google Drive 내의 `.env` 파일에 저장합니다. (코드에는 `{your_api_key}`로 표시되어 있어 실제 키를 입력해야 합니다.) 이렇게 하면 코드에 직접 키를 노출하지 않고 관리할 수 있습니다.
+- **API 키 로드 (셀 4):**`dotenv` 라이브러리를 사용해 방금 저장한 `.env` 파일에서 환경 변수를 불러옵니다. `os.getenv("UPSTAGE_API_KEY")`를 통해 API 키를 `UPSTAGE_API_KEY`라는 Python 변수로 가져와 "Success API Key Setting!" 메시지를 출력하며 성공을 확인합니다.
+- **라이브러리 설치 (셀 5):**`!pip install openai` 명령어로 `openai` Python 라이브러리를 설치합니다. Upstage API는 OpenAI의 API 형식과 호환되므로, 이 라이브러리를 사용해 편리하게 API를 호출할 수 있습니다.
+
+---
+
+## 2. Upstage API 기본 사용 (셀 6-7)
+
+- **기본 API 호출 (스트리밍) (셀 7):**`openai.OpenAI` 클라이언트를 초기화합니다. 이때 `api_key`와 Upstage API의 엔드포인트인 `base_url`을 지정합니다.
+    - `client.chat.completions.create`를 호출하여 `solar-pro2` 모델에 "안녕? 넌 이름이 뭐니?"라고 질문합니다.
+    - `stream=True`로 설정하여, 모델의 답변이 생성되는 대로 조각(chunk) 단위로 실시간 전송받습니다.
+    - `for` 루프를 돌며 각 조각의 `content`를 `print` 함수로 출력합니다.
+    - **결과:** "저는 **업스테이지의 Solar Pro 2**입니다!..."라는 모델의 자기소개 답변이 스트리밍 방식으로 출력됩니다.
+
+---
+
+## 3. 고급 API 활용: 비동기 병렬 처리 (셀 8-10)
+
+여러 개의 요청을 동시에 처리하여 시간을 절약하는 방법을 보여줍니다.
+
+- **HTTPX 설명 (셀 8):**
+비동기 통신을 지원하는 `httpx` 라이브러리를 소개합니다. 여러 API 요청을 순차적으로 기다리지 않고 병렬로 처리할 수 있게 해줍니다.
+- **비동기 함수 정의 (셀 9):**`async def call_chat_completion(...)`라는 비동기 함수를 정의합니다. 이 함수는 `httpx.AsyncClient`를 사용해 API에 `POST` 요청을 비동기적으로 보냅니다. `await` 키워드는 비동기 작업이 완료될 때까지 기다리되, 다른 작업을 막지 않고 이벤트 루프에 제어권을 넘깁니다.
+- **비동기 작업 실행 (셀 10):**
+    - `async def request(tasks)`: 여러 비동기 작업을 리스트로 받아 `asyncio.gather`를 사용해 동시에 실행하는 헬퍼 함수를 정의합니다.
+    - API URL과 헤더를 설정합니다.
+    - `prompts` 리스트에 "농담 하나만 해 줘", "프랑스의 수도는 어디야?" 두 개의 질문을 준비합니다.
+    - `for` 루프를 돌며 각 프롬프트에 대한 API 요청 '작업(Task)'을 생성하여 `tasks` 리스트에 추가합니다. (이때 `await`가 없으므로 아직 실행되지는 않습니다.)
+    - `await request(tasks)`를 호출하여 준비된 모든 작업을 동시에 실행합니다.
+    - **결과:** 두 개의 요청이 거의 동시에 시작되고, 모든 응답이 완료된 후 "Response 1" (농담)과 "Response 2" (프랑스 수도)가 차례대로 출력됩니다.
+
+---
+
+## 4. 고급 API 활용: JSON 응답 고정 (셀 11-12)
+
+LLM의 답변을 일반 텍스트가 아닌, 정해진 구조의 JSON 형식으로 받도록 강제하는 기능입니다.
+
+- **JSON 모드 사용 (셀 12):**
+    - `response_format` 변수에 원하는 JSON 스키마를 정의합니다. 여기서는 `capital` (수도)와 `translation` (영어 번역)이라는 두 개의 문자열 속성을 가진 객체를 요구합니다.
+    - `client.chat.completions.create`를 호출할 때 `response_format` 매개변수를 추가합니다.
+    - "한국의 수도는 어디야?"라고 질문합니다.
+    - **결과:** 모델은 일반적인 문장이 아닌, 정확히 스키마에 맞는 `{"capital": "서울", "translation": "Seoul"}` JSON "문자열"을 반환합니다.
+    - `json.loads`를 사용해 이 문자열을 실제 Python 딕셔너리로 변환하여 "Structured Response"로 출력합니다.
+
+---
+
+## 5. 데이터 합성 (Data Synthesis) (셀 13-16)
+
+LLM을 이용해 학습이나 테스트에 필요한 인공 데이터를 생성하는 과정입니다.
+
+- **데이터 합성 설명 (셀 14):**
+데이터 합성이란 무엇인지, 그리고 효과적인 프롬프트를 위한 3요소(역할, 목표, 조건)와 핵심(다양성, 일관성)을 설명합니다.
+- **데이터 생성 실습 (셀 16):**
+'영화 추천' 데이터를 생성하는 구체적인 예시입니다.
+    - `SYSTEM_PROMPT`: LLM에게 "영화 전문가 '시네마스터'"라는 **역할**을 부여합니다.
+    - `RULE`: "친구가 소개 해주는 듯 부드럽고 친근한 말투", "호들갑 떨듯이 설명"이라는 **조건** (톤앤매너)을 설정합니다.
+    - `response_format`: `movie_name`, `year`, `reason` 등 영화 추천에 필요한 필드를 포함하는 JSON 스키마를 **응답 형식**으로 지정합니다.
+    - `client.chat.completions.create`를 호출하며 위에서 정의한 시스템 프롬프트, 규칙, 사용자 질문("공포 영화를 추천해줘"), 그리고 JSON 형식을 모두 전달합니다. `temperature=0.5`로 설정해 약간의 창의성을 허용합니다.
+    - **결과:** 모델이 생성한 영화 "허슬러" (2019)에 대한 추천 정보가 정의된 JSON 형식에 맞춰 출력됩니다. (참고: 모델이 '허슬러'를 공포 영화로 잘못 추천하는 환각 현상을 보였습니다.)
+
+---
+
+## 6. 생성 데이터 평가 (LLM as a Judge) (셀 17-18)
+
+사람 대신 LLM을 '평가자(Judge)'로 사용하여, 이전에 생성된 데이터의 품질을 검증하는 기법입니다.
+
+- **LLM as a Judge 설명 (셀 17):**
+이 기법의 필요성(비용, 시간 절약)과 핵심(명확한 평가 기준, 일관성 확보를 위한 `temperature=0`)을 설명합니다.
+- **평가 실습 (셀 18):**
+    - `JUDGE_SYSTEM_PROMPT`: '평가자' LLM에게 새로운 역할을 부여합니다. 1~5점의 채점 원칙과 JSON 출력 형식을 상세히 지시합니다.
+    - `judge_response_format`: 평가 결과(점수 `score`, 코멘트 `comment`)를 받을 JSON 스키마를 정의합니다.
+    - `USER_PROMPT` (템플릿): 평가자에게 [instruction], [output], [criteria]를 전달할 틀을 만듭니다.
+    - **평가 수행:**
+        1. `instruction`: "공포 영화를 추천해줘" (원래 요청)
+        2. `output`: 셀 16에서 생성된 '허슬러' 추천 JSON 데이터
+        3. `criteria`: 셀 16에서 사용된 모든 지시사항 (시네마스터 역할, 친근한 말투 규칙, JSON 형식 등)
+    - `client.chat.completions.create`를 호출하여 평가자 LLM에게 위 정보들을 전달합니다. 이때 `temperature=0`으로 설정하여 일관되고 객관적인 평가를 유도합니다.
+    - **결과:** 평가자 LLM은 `{'score': 2, 'comment': "추천 영화가 공포 장르가 아닌... '허슬러'는 당구 선수들의 이야기..."}`라는 JSON 응답을 반환합니다.
+    - **분석:** 평가자 LLM은 생성 모델(셀 16)이 사용자의 "공포 영화" 요청을 어기고 '스포츠 드라마' 장르의 영화를 추천한 오류를 **정확하게** 지적해냈습니다. 이는 "LLM as a Judge" 기법이 효과적으로 작동함을 보여줍니다.
+
+---
+
+## 요약
+
+이 Notebook은 Upstage API의 기본적인 사용법부터 시작하여, `asyncio`를 활용한 성능 최적화, `JSON 모드`를 통한 구조화된 출력, 그리고 '데이터 생성'과 'LLM을 이용한 평가'로 이어지는 실용적이고 고급화된 AI 워크플로우를 체계적으로 시연하고 있습니다.
+
+# Post-training (Instruction-tuning, RLHF)
+
+1. **Pre-training vs Post-training**
+    
+    Pre-training
+    
+    : 방대한 인터넷 텍스트 데이터를 이용한 Self-supervised learning 을 통해 언어 패턴, 지식등을 배움
+    
+    ![image.png](attachment:0938fe27-6467-4284-a57c-09b77e2ff283:image.png)
+    
+    Post-training
+    
+    : 유저의 의도를 파악하고 원하는 답변을 모델이 응답하도록 사후 학습을 진행한다
+    
+    ![image.png](attachment:be0259f6-c4d0-4756-ac62-caa0fbd830c6:image.png)
+    
+2. **Instruction-tuning**
+    
+    사전 학습 후 LLM은 유저의 의도와 일치하지 않음
+    
+    파인 튜닝 : 언어 모델이 사람이 내린 지시문을 따르도록 학습하는 단계
+    
+    정답 레이블이 요구되며, 다양한 태스크를 풀 수 있도록 적응하는 것에 중점을 둠
+    
+    → 다양한 태스크에서 (지시문, 응답) 쌍을 모아서 언어모델을 파인튜닝
+    
+    ![image.png](attachment:8e25fca1-439f-4b4b-bda2-0e69cfb6d3de:image.png)
+    
+    더 많은 태스크를 가진 데이터 학습
+    
+    : 대부분의 경우와 마찬가지로 데이터와 모델의 **크기**가 핵심이다
+    
+    ![image.png](attachment:ad04868b-3da4-43c2-8d1e-8c3609a38594:image.png)
+    
+    - MMLU 예시
+        
+        ![image.png](attachment:7b196e10-a0c2-43f6-8fef-5a7b73dba444:image.png)
+        
+    - Alpaca : LLaMA 7B 모델을 52K 개의 instruction-following 데이터로 파인튜닝
+        
+        ![image.png](attachment:ce25cd29-2bd5-4864-a556-0b1179388188:image.png)
+        
+        → your LLM 생성 가능
+        
+    1. **Reinforcemen Learning from Human Feedback (RLHF)**
+        
+        > Instruction-tuning 을 하더라도, 언어모델의 목표와 ‘인간의 선호를 만족시키는 것’ 사이에는 **여전히 불일치가 존재**
+        > 
+        
+        → 인간의 선호를 반영한 최적화
+        
+        - RLHF 파이프라인 큰 그림
+            1. Instruction-tuning
+            
+            2, 3. 보상 최대화
+            
+            ![image.png](attachment:ed0dd651-889d-4af9-b6d7-432be703ff95:image.png)
+            
+            ![image.png](attachment:5afc2d5b-9c11-47b4-9906-078564edd4d8:image.png)
+            
+        - 인간의 선호도를 어케 모델링?
+            
+            문제 : 인간의 판단은 일관성이 떨어지고, 기준이 어긋날 수 있다.
+            
+            해결 방법 : 직접 점수를 매기지 않고, 응답을 비교하는 방식을 활용한다
+            
+            → 해당 데이터로 리워드 모델을 학습시키게 된다
+            
+        - 어케 최적화?
+            
+            → 강화학습
+            
+            ![image.png](attachment:9c854091-9f3a-4122-96fb-a0ad95903129:image.png)
+            
+            주의점 : 리워드 모델이 잘 작동하는지 먼저 잘 확인해야 함
+            
+    2. What’s Next?
+        - 리워드 모델링의 한계점 → 인간의 선호도는 일관성이 부족함
+            - 리워드 해킹은 강화학습에서 자주 발생하는 문제
+            - 챗봇들은 정답의 여부와 관계없이 생산적이고 도움이 되어 보이는 정답을 생성
+            - 이러한 결과들은 환각 문제를 발생시킴
+        - DPO
+            - RLHF에서 RL을 제거하자?
+            - RLHF에서 수학문제와 같이 답이 분명한 문제들은 정답 여부로 리워드를 주자
+                
+                대표적 성공 사례 : DeepSeek-R1
+                
+
+# Retrieval-augmented Language Models
+(Information Retrieval, RAG)
+
+1. Basic Concepts of Retrieval-augmented LM
+    
+    Retrieval-augmented LM : 추론 시 외부 데이터 저장소를 불러와 활용하는 언어모델
+    
+    ![image.png](attachment:74606745-5730-4a5c-8d9c-fe1ded0486b4:image.png)
+    
+    - Datastore : 가공되지 않은 대규모 텍스트 코퍼스
+    - Query : 검색 질의
+    - Index : 문서나 단락과 같은 검색 가능한 항목들을 체계적으로 정리하여 더 쉽게 찾을 수 있도록 하는 것 → 쿼리와 관련 있는 정보를 식별함
+    - 검색(Retrieval) : Datastore에 있는 수 많은 정보 중에서, 주어진 쿼리와 가장 관련성이 높은 정보를 찾아내는 과정
+        
+        ![image.png](attachment:86b18111-b7b5-484a-917e-d620d80734bf:2abc2b91-a99c-4f39-96b4-641a3ae621f5.png)
+        
+    - Retrieval-augmented Genaration (RAG)
+        
+        : 사용자의 질문에 답하기 위해, Retrieval 후 이를 언어모델이 생성 단계에 함께 활용하는 방법
+        
+2. **Information Retrieval (정보 검색)**
+    
+    목표 : 검색 질의와 가장 관련성 높은 정보 제공
+    
+    ![image.png](attachment:39eccd4b-4a63-4e93-b34e-c2837f525939:image.png)
+    
+    정보 검색(IR) : 사용자의 질의에 맞는 정보를 대규모 데이터에서 찾아 제공하는 과정
+    
+    정보검색의 활용
+    
+    - 웹 서치 & 아이템 서치
+        - 서치 엔진 ( 구글, 네이버 등 )
+        - 이커머스 ( 아마존, 쿠팡 등 )
+    - 추천 시스템
+        - OTT 서비스
+        - 이커머스
+    - 검색증강생성 (RAG)
+        
+        : RAG는 검색된 문서를 활용하여 더 정확하고 최신의 답변을 생성한다
+        
+    
+    Retriever 란?
+    
+    - 사용자의 질의(Query)에 맞는 후보 문서를 저장소에서 찾아오는 모듈
+    - RAG에서 첫 단계 역할을 수행
+    
+    Retriver 종류
+    
+    - Spare Retriver (어휘적 유사도 기반)
+        
+        : 전통적인 정보검색 기법으로, 쿼리와 문서 간의 정확한 용어 일치에 기반
+        
+        ![image.png](attachment:3dac7c97-0643-40df-a080-0b00f057fdde:image.png)
+        
+        ![image.png](attachment:9b60d8e8-c472-4408-b36b-5c7a85c9a50f:image.png)
+        
+        - **장점 : 단순성, 효율성, 투명성**
+        - **단점 : 제한된 의미 이해**
+    - Dense Retriver (의미적 유사도 기반)
+        
+        : 쿼리와 문서를 표현하기 위해 dense vector 를 활용해 의미적 유사도에 기반
+        
+        - 임베딩 모델 : 단어/문장의 의미를 표현 가능
+        - Bi-encoder : 대조 학습을 통해 학습되며, 쿼리가 긍정적인 문서와 가깝게 유지되도록 하고 부정적인 문서에서는 멀어지도록 유도
+            
+            두 문장을 따로 인코딩 → 빠르고 대규모 DB검색에 적합하지만 정확도 낮음
+            
+        - Cross-encoder : 두개의 텍스트를 하나의 시퀀스로 결합
+            
+            **Self-attention을 통해 모든 쿼리와 문서토큰이 완전히 상호작용할 수 있어, bi-encoder보다 높은 정확도**
+            
+            **but 계산 비용이 크고 처리속도가 느리다**
+            
+        
+        ![image.png](attachment:d09ddd5b-51f7-4e49-8229-3d333c1ec8d4:image.png)
+        
+    
+    1. **Retrieval-augmented LM**
+        
+        : 추론 시 외부 데이터 저장소를 불러와 활용하는 언어모델이 RAG라고 불림
+        
+        RAG : 정보 검색부터 답변 생성까지의 프레임워크
+        
+        > Why Retrieval-augmented LM?
+        > 
+        1. LLM은 모든 지식을 다 자신의 파라미터에 저장 못함
+            - LLM은 pre-training 데이터에 자주 나타나는 쉬운 정보를 기억하는 경향
+            - RAG는 자주 등장하지 않는 정보에 대해서 큰 효과를 가져다 줌
+        2. LLM이 보유한 지식은 금세 시대에 뒤쳐지며, 갱신이 어려움
+            - 현재의 지식 편집 메서드들은 확장성이 부족
+            - 저장소는 쉽게 업뎃 가능, 확장성도 만족
+        3. LLM의 답변은 해석과 검증이 어려움
+        4. 기업 내부 정보와 같은 정보는 언어모델 학습에 활용 안됨
+            
+            → 정보 유출 위험성이 있음
+            
+        
+        > Challenges of Retrieval-augmented LM?
+        > 
+        1. Context를 어케 구성해야 하는가?
+            
+            ![image.png](attachment:7cfaea95-aee2-4d17-aeb4-068e744688f0:image.png)
+            
+        2. RAG의 결과는 검색 모델 성능에 의존
+            
+            ![image.png](attachment:cc969588-5ad5-40b0-88ad-321a919b7ffa:image.png)
+            
+            ![image.png](attachment:0e0ff415-ca44-4c6f-9ee2-c95c49dbcfd4:image.png)
+            
+            → Solution : Training with Noises
+            
+        3. LLM의 사전지식과 컨텍스트 간의 충돌 발생
+            
+            ![image.png](attachment:b5370ec1-11ed-4722-9a6f-897149890917:image.png)
+            
+            → Solution 1 : Context 위에서 Grounding 학습 강화
+            
+            → Solution 2 : Context 가 없을 때 답변 회피/거절 학습
+            
+        4. 복잡한 추론 필요 & 문서가 명확한 사실에 대한 오류를 포함할 때
+            
+            ![image.png](attachment:10561810-2d10-443f-b474-488535ba828a:image.png)
+            
+        
+
+# LLMs with Tool Usage
+(LLM Agent, Tool Use, MCP)
+
+1. **Basic Concepts of LLM Agents**
+    
+    Agent : 센서를 통해 환경을 인지하고 액추에이터(Actuator)를 통해 환경에 대해 액션을 통해 영향을 미치는 것으로 간주될 수 있는 모든 것
+    
+    강화학습 - 의사결정의 과학
+    
+    LLM Agent : LLM을 핵심 구조로 삼아 환경을 이해하고 행동을 수행하는 에이전트
+    
+    ![image.png](attachment:14d4e9da-f782-4c62-b1c7-336d2f66543a:image.png)
+    
+    **성공적인 에이전트가 갖춰야할 요건들**
+    
+    - 도구 사용 ( Tool use )
+    - 추론과 계획 ( Reasoning and Planning )
+    - 환경 표현 ( Environment Representation )
+    - 환경 이해 ( Environment understanding )
+    - 상호작용 / 의사소통 ( Interaction / Communication )
+    
+    ![image.png](attachment:b6d6cf20-086e-4487-bb5a-69e73cb9d5f2:image.png)
+    
+2. **Tool Usage in LLMs**
+    
+    Tool (LLM 에이전트를 위한) : 언어모델 외부에서 실행되는 프로그램에 연결되는 함수 인터페이스
+    
+    → LLM은 함수 호출과 입력 인자를 생성함으로써 이 도구를 활용할 수 있다.
+    
+    ![image.png](attachment:dc7728b1-157c-44e7-9466-dfbf355fe80c:image.png)
+    
+    도구 사용 패러다임
+    
+    - 도구 사용 : 두 모드 간의 전환
+        - 텍스트 생성 모드
+        - 도구 실행 모드
+    - 도구 사용을 유도하는 방법
+        - 추론 시 프롬프트
+        - 학습
+    
+    ![image.png](attachment:5d6dc6d9-1f94-4e57-b9e0-281c73a0f868:image.png)
+    
+    툴 러닝(Tool Learning) 방식
+    
+    - 모방 학습 : 인간의 도구 사용 행동 데이터를 기록함으로써, 언어모델이 인간의 행동을 모방하도록 학습
+    - 가장 간단하고 직관적
+    - OpenAI : WebGPT
+        - 검색엔진을 사용하기 위해 인간의 행동 모방
+        - 지도학습 + 강화학습
+        - 단, 6000개의 데이터만 필요
+        - 장문 질의응답에서 뛰어난 성능, 인간보다 좋은 성능
+    - Meta : Toolformer
+        - 모델 스스로 학습 데이터 생성
+        - 지도 학습
+        - 검색 엔진 뿐만 아니라, 달력, 계산기 와 같은 여러 API를 활용
+        
+        데이터 생성 방식
+        
+        1. API 호출 샘플링 : LLM이 기존 데이터셋에서 문맥을 보고 API호출 후보를 생성
+        2. API 실행
+        3. API 호출 필터링 : API 호출이 문맥에 유용한지 평가 및 필터링
+    - ToolLLM : 기존 연구의 한계점인 툴의 다양성과 범용성을 타겟팅한 연구
+        
+        최근 접근
+        
+        - 멀티 모달 툴 러닝 : 멀티모달 LLM을 기반으로 도구를 정의하고 활용하는 연구
+        - 강화학습 : 지도 학습을 넘어 에이전트에서의 강화학습을 도입하는 연구
+    
+3. **Model Context Protocol (MCP)**
+    
+    : 언어 모델이 외부 툴과 상호작용하기 위한 표준화된 방식으로 정의한 프로토콜
+    
+    → 툴 호출, 응답 전달, 컨택스트 공유를 하나의 공통 규격으로 처리
+    
+    - 아키텍처
+        - MCP Host
+        - MCP Client
+        - MCP Server
+        
+        ![image.png](attachment:6eb994f6-883e-4eb2-9f4f-f3c5b8aad084:image.png)
+        
+    - MCP 계층(Layer)
+        - 데이터 계층 ( 내부 계층 )
+        - 전송 계층 ( 외부 계층 )
+    - 장점
+        - 표준화
+        - 확장성
+        - 호환성
+        - 재사용성
+        - 투명성
+    
+
+# AI Agents & Langchain
+
+1. **Environment Representation & Understanding**
+    
+    에이전트가 환경을 이해하기 위해 필요한 것
+    
+    - 환경에 접근하기 위한 툴
+    - 환경의 표현
+        - 텍스트
+        - 이미지
+            
+            : 문제점 - 에이전트로서 좋은 성능을 내려면 세부적인 이해가 중요
+            
+    - 환경을 이해/탐색하기 위한 방법론들
+    
+    복잡한 환경에 대한 이해
+    
+    - 환경 특화 프롬프트 → 문제점 : 일반화
+    - 비지도 프롬프트 유도 : 프롬프트를 사람이 아닌 에이전트가 경험을 통해 자동 생성 및 일반화
+    - 환경 탐색 : 환경을 탐색할때 보상 부여
+    - 탐색 기반 궤적 기억 : 기존 데이터에 의존하지 않고, 탐색과 자기 교정을 통해 데이터 생성
+    
+2. **Resoning & Planning**
+    
+    Planning 종류
+    
+    - Local Planning - ReACT
+    - Global Planning - Plan-and-Solve Prompting
+        
+        ![image.png](attachment:e329821a-2e28-48a4-9999-dbc496af92ac:image.png)
+        
+    
+    오류 식별과 회복 : 에이전트는 에러/실수에서 회복할 방법이 필요 → Reflextion
+    
+    계획 재검토 → CoAct : 에이전트가 실행 도중 계획을 재검토하고 수정 가능
+    
+3. **Langchain**
+    
+    : LLM 기반 애플리케이션을 빠르게 개발할 수 있는 오픈소스 프레임워크
+    
+    → 데이터/툴과 연결하여 강력한 애플리케이션 개발 가능
+    
+    특징
+    
+    - 다양한 LLM provider와 통합하여 모델/회사별 API 차이를 공통 인터페이스로 관리 가능
+    - Prompt, Memory, Tools와 같은 컴포넌트들이 모듈화되어 있어 재사용성과 확정성 확보
+    - LangGraph 기반으로 복잡한 워크플로우를 시각적으로 설계 및 관리 가능
+    
+    ![image.png](attachment:3f8bc74d-e5e0-4987-b987-c2818d2d9ec4:image.png)
+    
+    Langchain 
+    튜토리얼 링크 : https://python.langchain.com/docs/tutorials/
+    
+    RAG w/ Langchain
+    튜토리얼 링크: https://python.langchain.com/docs/tutorials/rag/
+    
+    Agent w/ Langchain
+    튜토리얼 링크: https://python.langchain.com/docs/tutorials/agents/
+    
+    MCP w/ Langchain
+    • 링크: https://github.com/langchain-ai/langchain-mcp-adapters?tab=readme-ov-file
