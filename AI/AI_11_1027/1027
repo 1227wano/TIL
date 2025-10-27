@@ -1,0 +1,364 @@
+# Agent
+
+> **최고의 의사를 ChatGPT가 대신할수있을까?**
+> 
+1. 범용 LLM
+    - 모든 도메인에 대해서 일정 수준 이상의 응답이 가능한 대형 언어 모델
+    - 가정의학과 전문의처럼, 넓은 지식 기반을 가지고 대부분의 문제에 1차 대응 가능
+2. 의료 특화 LLM
+    - 의료 지식에 특화되어 있으며 진단, 처방, 환자응대 등에 전문화된 모델
+    - 내과 전문의처럼, 의료 특정 도메인에 깊이 있는 지식을 갖춘 LLM
+3. 의료진 에이전트형 LLM(Agentic Clinician AI)
+    - 같은 병이라도 의료진마다 진단/치료 방식 다름
+        
+        → 의료진 개인의 판단 맥락을 반영할 수 있어야 함
+        
+    - 의료진 에이전트 AI는 단순 지식 제공을 넘어 의료진의 사고 흐름과 의사결정 과정을 능동적으로 재현 → 의료진 본인의 ‘디지털 트윈’처럼 동작
+4. 의료분야에서의 AI Agent
+- 의학 영상 판독
+- 의료 수술 보조 로봇
+
+### Introduction to AI Agent
+
+1. **What is AI Agent?**
+    
+    인공지능의 새로운 지평. 핵심적인 혁신 기술로 부상하며 인간과 컴퓨터의 상호작용 및 자동화 영역 재정의할 것으로 기대
+    
+    - Perception AI (지각 AI) : 특화된 분야에서 해석 및 분석 - 현대 기계학습의 기반
+    - **Generation AI (생성형 AI)** : 콘텐츠 제작 (텍스트, 이미지 등) - “The Creative Powerhouse”
+    - **Agentic AI (에이전트형 AI)** : 능동적인 작업 수행 - “자율형 문제해결 시스템”
+    - Physical AI (물리적 AI) : 현실세계에서 작동 - AI 시스템이 물리적 실체를 얻음
+    
+    ![image.png](attachment:f5acf4ca-eca0-480a-9603-7fb91fe6ac39:image.png)
+    
+    에이전트 : 다른 사람 또는 단체를 대신하여 행동하는 개인 또는 단체
+    
+    → 특정 작업을 수행하고, 결정을 내리며, 합의를 도출하는 것을 목표로 함
+    
+    ⇒ AI Agent : AI를 사용하여 사용자를 대신해 목표를 추구하고 작업을 수행하는 소프트웨어 시스템
+    
+    ![image.png](attachment:9532b0d2-93d6-4a37-a67e-c77f898059d9:image.png)
+    
+    ![image.png](attachment:e73adf0b-142a-4c41-8e76-93ad81880b6d:image.png)
+    
+    but, LLM 관점에서 AI와 AI Agent를 명확하게 구별하지 않고 경계가 모호함
+    
+    AI Agent 의 주요 특성
+    
+    : 자율성, 동작(도구), 학습(적용), 추론(계획), 기억, 인식
+    
+    ![image.png](attachment:731bb254-f303-4419-b5e1-198bbdcaca2a:image.png)
+    
+    Chanllenges in AI Agent
+    
+    - 학술 연구 영역
+        
+        ![image.png](attachment:acd0f963-6e52-4e54-8a3d-baf59bef89b2:image.png)
+        
+    - 실무 응용 영역
+        
+        ![image.png](attachment:ae00be93-3dcb-4e51-ae3e-d760257c1c65:image.png)
+        
+    
+2. **Multi-Agent System**
+    
+    개별 LLM의 본질적 한계
+    
+    - 환각 현상
+    - 자기회귀적 성격 : 천천히 생각, 신중한 추론 불가
+    - 스케일링 법칙 : 모델 크기 증가에 따른 성능 향상 둔화
+    
+    > Why Multi-Agent System?
+    > 
+    - 집단 지성
+    - 지능형 에이전트들의 수평적 확장
+    - 효율적인 협업
+        
+        → 개별 에이전트들의 능력의 총합을 뛰어넘는 진정한 집단 지성을 실현하고자
+        
+    
+    - Multi-Agent System의 주요 구성 요소
+        - 에이전트 - 역할, 능력, 행동, 지식 모델을 가진 핵심 행위자들
+        - 환경 - 에이전트가 존재하고 인식 및 행동할 수 있는 외부 세계
+        - 상호작용 - 표준화된 통신 언어를 사용한 에이전트 간 소통
+        - 조직 - 에이전트들은 계층 구조로 관리되거나 자발적인 행동으로 조직
+        
+        ![image.png](attachment:ce4a63d4-84ae-4072-b940-bdfebec90e98:image.png)
+        
+        ![image.png](attachment:13dca007-f1c4-47f0-abc3-8610d2077fcd:image.png)
+        
+    
+    - 방법론 : 협업 유형
+        - 협력 - 역할 분담, 문서 품질 향상
+            
+            ![image.png](attachment:c0b1556e-5768-4681-b34c-3cceef8512a4:image.png)
+            
+            ![image.png](attachment:6866faf9-5823-4207-b6ed-acba653f6413:image.png)
+            
+        - 경쟁 - 대립, 논증
+            
+            ![image.png](attachment:8a9b9340-7f02-420d-9626-1e59c3c38bf6:image.png)
+            
+            ![image.png](attachment:529ab872-707c-4b14-97e2-d511b50314de:image.png)
+            
+        - 협력+경쟁 - 균형 잡힌 판단
+            
+            ![image.png](attachment:8caa5608-7ccb-40fa-bbdd-794797fa09b3:image.png)
+            
+            ![image.png](attachment:6fbbf212-c0e3-4775-923d-b2a1f13e0397:image.png)
+            
+    
+    - 방법론 : 협업 전략
+        - 규칙 기반 프로토콜 : 사전에 정의된 규칙, 인간의 협력 방식 모방
+        - 역할 기반 프로토콜 : 사전에 정의된 역할, 주로 도메인 지식에 기반
+        - AI Agent 가 협업을 통해 자동 개발하는 과정
+            
+            ![image.png](attachment:f1e46689-8c48-4984-bcef-24a6f9c7b90d:image.png)
+            
+        
+    - 방법론 : 커뮤니케이션 전략
+        - 중앙집중형 구조
+            
+            ![image.png](attachment:08a56765-1b78-4237-9a2d-a2e76b17b916:image.png)
+            
+        - 탈중앙화 구조
+            
+            ![image.png](attachment:3ecab44b-24f8-4f91-b61d-b3a0a72777d4:image.png)
+            
+        - 다중 에이전트 시스템에 대한 우려의 시사점
+            
+            ![image.png](attachment:bb9012fa-0e36-4ec5-8827-6918ba193eed:image.png)
+            
+    
+3. **Memory & Tool in Multi Agent System**
+    - Memory & Tool
+        
+        > 패러다임의 전환 : 언어모델에서 에이전트 시스템으로
+        > 
+        - 수동적인 LLM과 달리, AI Agent는 실시간 정보에 접근하고, 외부 도구를 활용하며, 물리적 또는 디지털 세계와 상호작용하고, 정적인 훈련 데이터를 넘어서서 적응 가능
+        - AI Agent 는 환경을 인지하고, 계획을 수립하며, 특정 목표 달성을 위해 구체적인 행동을 실행 가능한 능동적 개체
+        
+        ![image.png](attachment:d203c661-8155-4806-b12a-27d2984e2020:image.png)
+        
+        ![image.png](attachment:3de15635-0868-4754-8a20-fe558ddd4176:image.png)
+        
+        - LLM 내장 매개변수 메모리의 한계
+            
+            ![image.png](attachment:9576462f-955f-4773-b6d8-6a9b033d511c:image.png)
+            
+        
+    - 검색 증강 생성 (RAG)
+        - 핵심 아이디어 : LLM이 답변을 생성하기 전에 신뢰할 수 있는 외부 소스(데이터베이스, 최신 웹 문서)에서 관련 정보를 검색하고, 해당 정보를 바탕으로 응답을 구성
+        - 장점 : LLM의 자연스러운 표현력과 외부 지식의 정확성, 시의성, 검증 가능성을 결합하여 더욱 신뢰할 수 있고 근거가 확실한 답변을 생성
+        
+        ![image.png](attachment:37a9b412-0bcf-496b-830e-152c056e1032:image.png)
+        
+        but, 한계점..
+        
+        ![image.png](attachment:1d6ba252-8ad1-41a6-8884-d7338e7bf156:image.png)
+        
+        ↓
+        
+        에이전트형 RAG
+        
+        : AI Agent가 RAG 파이플라인을 향상시켜, 각 단계들을 조율하고 단순한 검색/생성을 넘어서는 역할을 하도록 함
+        
+        → 할수있는 일 : 검색 여부 결정, 도구 선택, 쿼리 생성, 결과 평가/재검색
+        
+        - 주요 구성 요소 : LLM, 메모리, 계획, 도구
+            
+            ![image.png](attachment:022520a3-712f-4a3f-b23d-ed098866343e:image.png)
+            
+        - 단일 에이전트형 RAG
+            
+            ![image.png](attachment:a56b078a-2a0a-4048-84ed-300b2c98a413:image.png)
+            
+        - 멀티 에이전트형 RAG
+            
+            ![image.png](attachment:4bbe9eb9-66b1-44de-acfa-9c0595cada3c:image.png)
+            
+        
+    - 멀티 에이전트 시스템을 위한 훈련 방법
+        - 딜레마 : 언제, 무엇을, 어떻게?
+            
+            ![image.png](attachment:e5338bd2-f461-402c-a57a-afec553daa29:image.png)
+            
+        - Toolformer : 언어 모델이 스스로 도구 사용법을 학습
+            
+            ![image.png](attachment:96dba191-9c28-439f-9047-d01be242906b:image.png)
+            
+        - Gorilla : LLM을 대규모 API와 연결
+            
+            ![image.png](attachment:9c5453f7-c70a-4332-9b72-a5c895eed919:image.png)
+            
+        - ReTool : LLM의 전략적 도구 사용을 위한 강화학습
+            
+            ![image.png](attachment:0081ba49-accd-4d97-8d3a-fadecd410025:image.png)
+            
+        - Search-R1 : LLM을 사용한 더 나은 웹 검색을 위한 강화 학습
+            
+            ![image.png](attachment:1b9ee9b8-f6df-4782-a9ef-2fe5b02dfcf2:image.png)
+            
+    - 모델 컨텍스트 프로트콜(MCP)
+        
+        ![image.png](attachment:a2b8aa39-b802-4ec2-bcac-7163d2683d73:image.png)
+        
+        ![image.png](attachment:222a17e3-9df5-4a6d-8edd-595ce56df39c:image.png)
+        
+    - Agent2Agent 프로토콜
+        
+        ![image.png](attachment:10211b7c-821e-475d-9227-c3aa31d045e9:image.png)
+        
+4. **Reasoning and Planning in AI Agent**
+    - LLM의 추론 능력(Reasoning)
+        
+        LLM은 논리 퍼즐, 수학적 문제, 코딩과 같은 복잡한 문제를 해결하기 위해 추론(단계별 사고 과정)이 필요
+        
+        → 프롬프트 만으로 추론 능력 이끌어낼 수 있음
+        
+        ![image.png](attachment:77bacc08-b778-49df-a679-4a04ff252476:image.png)
+        
+        ![image.png](attachment:8132b5a8-2d67-4526-8019-0d074caa90af:image.png)
+        
+        추론 능력 강화
+        
+        - 자기 일관성 : 일관성있는 답변을 고르는 디코딩 방식
+        - Tree of Thoughts : DFS, BFS 방식으로 다양한 생각 생성하고 평가
+        
+    - LLM Agent의 계획 수립 (Planning)
+        - ReAct
+            
+            ![image.png](attachment:f8b73f2f-3e01-4fa5-a72c-04b9f00821be:image.png)
+            
+        - HuggingGPT
+            
+            ![image.png](attachment:2daf34cb-bdc2-45e3-93f2-0158868f83e2:image.png)
+            
+        - Plan-and-Act
+            
+            ![image.png](attachment:2f10e6fa-d282-4458-b49d-a4159121d93e:image.png)
+            
+    
+    - 추론 시간 연산량 최적화 및 효율적 추론 접근법
+        - 추론시간의 연산량 증대
+            
+            ![image.png](attachment:e348db67-4002-4080-bdba-b1bc0f8e4eec:image.png)
+            
+            ![image.png](attachment:c23cbfee-6157-417e-a089-cce2b4f83322:image.png)
+            
+        - 추론 모델 : 추론을 위한 추가 컴퓨팅 자원이 할당된 추론 모델 등장
+            
+            ![image.png](attachment:16a542c1-4018-47ff-b079-282b999171fe:image.png)
+            
+        - 추론 모델 강화
+            
+            ![image.png](attachment:2e701dbf-5e1e-4cb6-8c52-a921942e3f11:image.png)
+            
+        - 효율적인 추론
+            
+            ![image.png](attachment:5df91bd3-5830-45b6-a338-f76a81cba396:image.png)
+            
+            분류
+            
+            - 모델 기반 접근
+                
+                ![image.png](attachment:37f4483f-88a3-47da-be66-31a85187b17e:c5b2406d-a7a7-4108-b57c-a536e9fe5144.png)
+                
+            - 추론 결과 기반 접근
+                
+                ![image.png](attachment:b0c6d0ab-0842-4b85-9c66-c5bafe4d3889:image.png)
+                
+            - 입력 프롬프트 기반 접근 (라우팅)
+                
+                ![image.png](attachment:ef5e7b72-41c6-4fd8-bb55-5fb25c64e401:image.png)
+                
+5. **Domian-Specific AI Agent**
+    - Deep Reasearch의 배경
+        
+        패러다임의 전환
+        
+        : 웹 검색 → LLM 챗봇 → 검색 증강 생성(RAG) → 에이전트 기반 심층 연구
+        
+        ![image.png](attachment:5c98d69f-e0a5-41e1-94cc-0bd401931d16:image.png)
+        
+    
+    - 에이전트 기반 심층 연구
+        - 핵심 개념
+            
+            ![image.png](attachment:21315483-40c4-4fb7-9d45-f22c58bfaec2:image.png)
+            
+        - 역동적인 환경에서의 어려움과 해결방안
+            
+            ![image.png](attachment:823cbebf-c2b8-48a7-af0b-f1cf8b8bab25:image.png)
+            
+        - 강화학습 기반 훈련 및 보상 설계
+            
+            ![image.png](attachment:f6ac5bc5-2af7-419a-9901-8cbec170bc33:image.png)
+            
+        - Test-Time Scaling(TTS)
+            
+            ![image.png](attachment:5774a128-3f99-424c-8b47-452f2b75f6d8:image.png)
+            
+        - 방법론 - 문제 해결 과정
+            
+            ![image.png](attachment:8c537911-9fe2-451c-b0f6-ab05a6d5d191:image.png)
+            
+            ![image.png](attachment:e1506579-4964-4462-9b77-cef07a477e65:image.png)
+            
+        - 역동적인 환경에서의 어려움과 해결방안
+            
+            ![image.png](attachment:9d8b07ce-9312-4d01-afc3-8da98b8ae926:image.png)
+            
+        - 강화학습 훈련 프레임워크 및 보상
+            
+            ![image.png](attachment:3455e9bc-23f0-4404-897c-998e65e16af9:image.png)
+            
+        - 성능 분석
+            
+            ![image.png](attachment:1ee43dd8-61a8-4e42-a831-5e64c0db7758:image.png)
+            
+        - 창발적 행동
+            
+            ![image.png](attachment:5973dbb5-5de4-4279-8508-d4e84697dc9a:image.png)
+            
+            ![image.png](attachment:7c269bb0-c8f3-4a46-8529-5a3a70dcd8c5:image.png)
+            
+    
+    - 평가 및 발전 방향
+        
+        한계점 및 고려사항
+        
+        - 높은 비용 (토큰)
+            
+            ![image.png](attachment:0e1bf663-7698-4e6b-8ce5-1bd554105bdf:image.png)
+            
+        - 범용성의 한계
+            
+            ![image.png](attachment:a5f16a88-6e20-4943-b514-7439e85f7184:image.png)
+            
+        - 에이전트 관리의 복잡성
+            
+            ![image.png](attachment:8eb908ca-6dd2-4b0f-a37a-a24bea3d18de:image.png)
+            
+        - 상태 관리 및 오류 전파
+            
+            ![image.png](attachment:cadf9834-5622-437e-bca9-8825307f47c7:image.png)
+            
+        - 평가 및 디버깅의 어려움
+            
+            ![image.png](attachment:aae124e1-8e49-4d14-b1ff-002da655da8b:image.png)
+            
+        
+        미해결 문제 및 발전 방향
+        
+        - 인간 중심의 상호 작용
+            
+            ![image.png](attachment:cff609be-fce2-462c-9cf2-09250ad16e0b:image.png)
+            
+        - 전문 분야 에이전트
+            
+            ![image.png](attachment:35cbeda1-1ea3-4553-b6be-db265f241c05:image.png)
+            
+        - 효율적인 TTS 구현
+            
+            ![image.png](attachment:d5a6b2b8-d797-4662-9621-ecb6e051b0e9:image.png)
