@@ -1,0 +1,644 @@
+# 실습 - ReAct형 AI Agent -
+
+**RAG(검색 증강 생성) 기술과 외부 도구(Tools)를 결합**하여, 스스로 생각(Reason)하고 행동(Act)할 수 있는 고급 AI 고객센터 상담원(Agent)을 만들기~~
+
+### 1. Markdown: # 4-2. LangChain Agent 만들기: RAG와 도구(Tools)의 결합
+
+첫 번째 블록은 이 실습의 개요와 시나리오를 설명하는 텍스트(Markdown) 셀입니다.
+
+- **실습 목표**: 단순 챗봇을 넘어, '생각'과 '행동'이 가능한 AI 고객센터 직원을 만듭니다.
+- **지난 시간 복습 (RAG)**: `shipping_policy.txt` 같은 텍스트 파일을 Vector Store에 저장하고, RAG 파이프라인을 구축하여 문서 기반 답변을 생성했습니다.
+- **이번 시간 시나리오 (Agent)**: RAG만으로는 "내 주문 배송 상태 알려줘" 같은 요청을 처리할 수 없습니다. 이는 **구조화된 데이터베이스(DB)** 조회가 필요하기 때문입니다.
+- **실습 단계**:
+    1. **환경 설정**: Agent가 조회할 실제 데이터베이스(`orders.db`)를 `sqlite3`로 생성합니다.
+    2. **도구(Tools) 준비**:
+        - (Tool 1) 지난 시간의 RAG 파이프라인을 '정책 검색 도구'로 만듭니다.
+        - (Tool 2) `orders.db`를 조회하는 '주문 상태 확인 도구'를 만듭니다.
+        - (Tool 3) 배송 지연 시 '쿠폰 발급 도구'를 만듭니다.
+    3. **ReAct Agent 생성**: LLM(두뇌)에 위 3가지 도구(손/발)를 장착시키고, 시스템 프롬프트(규칙)를 부여합니다.
+    4. **Agent 테스트**: Agent가 사용자의 요청을 받고 `'생각(Thought) -> 도구 선택(Action) -> 결과 관찰(Observation)'` (T-A-O) 사이클을 반복하며 작업을 완료하는 과정을 실시간으로 관찰합니다.
+    5. **(Extra) 대화 메모리 추가**: Agent가 이전 대화 내용을 기억하게 만듭니다. (`langgraph-checkpoint-sqlite` 사용)
+
+---
+
+### 2. Markdown: ## 0. 환경 설정
+
+실습에 필요한 환경을 설정하는 섹션의 시작을 알리는 텍스트 셀입니다.
+
+---
+
+### 3. Code: !pip install ...
+
+실습에 필요한 파이썬 라이브러리를 설치하는 코드 셀입니다.
+
+```python
+# langchain의 핵심 기능, 커뮤니티 모듈, Upstage LLM 연동 모듈을 설치합니다.
+# faiss-cpu는 RAG를 위한 Vector Store 라이브러리입니다.
+# langgraph는 Agent의 ReAct 로직(그래프)을 구성하는 데 사용됩니다.
+# langgraph-checkpoint-sqlite는 대화 메모리를 SQLite DB에 저장하기 위해 필요합니다.
+!pip install langchain langchain-core langchain-community langchain-upstage faiss-cpu "langgraph>=0.1.13" "langgraph-checkpoint-sqlite>=0.1.0"
+```
+
+---
+
+### 4. Markdown: ### 0-2. API Key 설정
+
+API 키 설정을 안내하는 텍스트 셀입니다. Upstage LLM을 사용하기 위한 API 키와, Agent의 작동 과정을 추적(logging)하기 위한 LangSmith 설정이 필요함을 안내합니다.
+
+---
+
+### 5. Code: import os ...
+
+API 키를 환경 변수로 로드하는 코드 셀입니다.
+
+```python
+import os
+from dotenv import load_dotenv
+
+# .env 파일에 저장된 API 키들을 불러옵니다.
+load_dotenv()
+
+# Upstage, LangSmith API 키를 환경 변수로 설정합니다.
+os.environ["UPSTAGE_API_KEY"] = os.getenv("UPSTAGE_API_KEY")
+os.environ["LANGCHAIN_API_KEY"] = os.getenv("LANGSMITH_API_KEY")
+# LangSmith 추적 기능을 활성화합니다.
+os.environ["LANGCHAIN_TRACING_V2"] = "true"
+# LangSmith 프로젝트 이름을 설정합니다.
+os.environ["LANGCHAIN_PROJECT"] = "Agent-Tutorial-Solar"
+```
+
+---
+
+### 6. Markdown: ### 0-3. orders.db 생성 (가상 DB)
+
+Agent가 사용할 가상의 주문 데이터베이스(`orders.db`)를 생성하는 목적을 설명하는 텍스트 셀입니다.
+
+---
+
+### 7. Code: import sqlite3 ...
+
+`sqlite3` 라이브러리를 사용해 `orders.db` 파일을 생성하고, 'orders' 테이블과 'order_items' 테이블을 만든 뒤 샘플 데이터를 삽입하는 코드 셀입니다.
+
+- **orders 테이블**: 주문 ID, 고객명, 총액, **상태(status)** (예: 'Processing', 'Shipped', 'Shipping Delayed')
+- **order_items 테이블**: 주문 상세 항목
+- **주요 데이터**: Agent가 테스트할 수 있도록 'Processing' 상태인 1001번 주문, 'Shipping Delayed' 상태인 1004번 주문 등이 포함됩니다.
+
+---
+
+### 8. Markdown: ## 1. [도구 1: RAG] 정책 검색 도구
+
+Agent가 사용할 첫 번째 도구인 RAG(정책 검색) 도구를 준비하는 섹션임을 알리는 텍스트 셀입니다.
+
+---
+
+### 9. Code: %%writefile shipping_policy.txt ...
+
+RAG의 기반 데이터가 될 `shipping_policy.txt` 파일을 생성하는 코드 셀입니다. `%%writefile`은 셀의 내용을 파일로 저장하는 매직 명령어입니다.
+
+- **파일 내용**:
+    - 표준 배송: 3-5일
+    - 배송 지연 정책: **"주문이 3일 이상 지연될 경우, 고객에게 5,000원 할인 쿠폰이 발급됩니다."** (이 부분이 나중에 중요하게 사용됩니다.)
+
+---
+
+### 10. Markdown: ### 1-2. RAG Chain 생성 ...
+
+텍스트 파일을 불러오고(Loader), 자르고(Splitter), VectorDB에 저장(Embedding, FAISS)하는 RAG 파이프라인의 기본 단계를 설명하는 텍스트 셀입니다.
+
+---
+
+### 11. Code: from langchain_community.document_loaders import TextLoader ...
+
+RAG 파이프라인을 구축하는 코드 셀입니다.
+
+```python
+# 필요한 모듈 임포트 (TextLoader, RecursiveCharacterTextSplitter, UpstageEmbeddings, FAISS)
+from langchain_community.document_loaders import TextLoader
+from langchain_text_splitters import RecursiveCharacterTextSplitter
+from langchain_upstage import UpstageEmbeddings
+from langchain_community.vectorstores import FAISS
+
+# 1. Load: shipping_policy.txt 로드
+loader = TextLoader("shipping_policy.txt")
+docs = loader.load()
+
+# 2. Split: 문서를 500자 단위로 분할
+text_splitter = RecursiveCharacterTextSplitter(chunk_size=500, chunk_overlap=50)
+splits = text_splitter.split_documents(docs)
+
+# 3. Store: Upstage 임베딩 모델을 사용해 FAISS Vector Store에 저장
+vectorstore = FAISS.from_documents(splits, UpstageEmbeddings())
+# 4. Retrieve: 검색기(retriever) 생성
+retriever = vectorstore.as_retriever()
+```
+
+---
+
+### 12. Markdown: ### 1-3. RAG Chain을 '도구(Tool)'로 감싸기
+
+RAG 체인을 Agent가 사용할 수 있는 '도구'로 만드는 방법을 설명하는 텍스트 셀입니다. `@tool` 데코레이터를 사용하여 함수를 도구로 변환하며, 이때 함수의 **Docstring(설명문)**이 Agent가 언제 이 도구를 사용할지 결정하는 가장 중요한 정보가 됨을 강조합니다.
+
+---
+
+### 13. Code: from langchain_core.runnables import RunnablePassthrough ...
+
+RAG 체인을 `policy_search`라는 이름의 도구(Tool)로 정의하는 코드 셀입니다.
+
+```python
+# ... (필요한 모듈 임포트) ...
+from langchain.prompts import PromptTemplate
+from langchain.tools import tool
+
+# LLM 정의 (Upstage Solar 모델 사용)
+llm = ChatUpstage(model_name="solar-1-mini-chat")
+
+# RAG 프롬프트 템플릿 정의 ("제공된 컨텍스트만을 기반으로 답변하세요...")
+template = """Answer the question based ONLY on the following context: ..."""
+prompt = PromptTemplate(...)
+
+# RAG 체인(LCEL) 정의
+rag_chain = (
+    {"context": retriever, "question": RunnablePassthrough()}
+    | prompt
+    | llm
+    | StrOutputParser()
+)
+
+# @tool 데코레이터를 사용해 RAG 체인을 '도구'로 변환
+@tool
+def policy_search(query: str) -> str:
+    """
+    배송 정책, 배송 지연 보상, 쿠폰 발급 기준 등 회사 정책과 관련된 질문에 답변할 때 사용합니다.
+    (This docstring is crucial for the agent)
+    """
+    # RAG 체인을 실행하여 결과를 반환
+    return rag_chain.invoke(query)
+```
+
+---
+
+### 14. Code: print(policy_search.invoke(...))
+
+방금 만든 `policy_search` 도구를 Agent 없이 직접 테스트하는 코드 셀입니다. "배송 지연되면 어떻게 돼?"라고 질문하여 RAG 도구가 "3일 이상 지연 시 5,000원 쿠폰 발급"이라는 정책을 잘 찾아오는지 확인합니다.
+
+---
+
+### 15. Markdown: ## 2. [도구 2: DB] 주문 상태 확인 도구
+
+Agent가 사용할 두 번째 도구인 '주문 상태 확인' 도구를 준비하는 섹션임을 알리는 텍스트 셀입니다.
+
+---
+
+### 16. Code: from langchain_community.utilities import SQLDatabase ...
+
+LangChain의 `SQLDatabase` 유틸리티를 사용하여 `orders.db`에 연결하고, `get_table_info()` 함수로 Agent(LLM)가 참고할 수 있도록 DB의 스키마(테이블 구조) 정보를 출력하는 코드 셀입니다.
+
+---
+
+### 17. Markdown: ### 2-1. 주문 상태 확인 도구 (Tool) 생성
+
+`order_id`를 입력받아 DB에서 주문 상태를 조회하는 맞춤형 도구를 생성하는 목적을 설명하는 텍스트 셀입니다.
+
+---
+
+### 18. Code: from pydantic import BaseModel, Field ...
+
+`check_order_status`라는 이름의 도구를 정의하는 코드 셀입니다.
+
+```python
+from pydantic import BaseModel, Field
+import sqlite3
+from langchain.tools import tool
+
+# Pydantic을 사용해 도구의 입력 스키마를 정의 (order_id가 정수형으로 꼭 필요함)
+class CheckOrderStatusInput(BaseModel):
+    order_id: int = Field(description="주문 상태를 확인할 주문 ID")
+
+# @tool 데코레이터와 함께 args_schema로 입력 스키마를 지정
+@tool(args_schema=CheckOrderStatusInput)
+def check_order_status(order_id: int) -> str:
+    """
+    특정 주문 ID의 배송 상태를 확인할 때 사용합니다. (Use this tool to check the status of a specific order)
+    """
+    # DB에 연결하여 order_id로 'status'를 조회
+    conn = sqlite3.connect("orders.db")
+    cursor = conn.cursor()
+    cursor.execute("SELECT status FROM orders WHERE order_id = ?", (order_id,))
+    result = cursor.fetchone()
+    conn.close()
+    
+    if result:
+        return f"Order {order_id} is {result[0]}."
+    else:
+        return f"Order {order_id} not found."
+```
+
+### 19. Code: print(check_order_status.invoke(...))
+
+방금 만든 `check_order_status` 도구를 1001번, 1002번 주문에 대해 직접 테스트하는 코드 셀입니다.
+
+---
+
+### 20. Markdown: ## 3. [도구 3: DB] 배송 지연 쿠폰 발급 도구
+
+Agent가 사용할 세 번째 도구인 '배송 지연 쿠폰 발급' 도구를 준비하는 섹션임을 알리는 텍스트 셀입니다. 이 도구는 **DB 조회(확인)**와 **쿠폰 발급(행동)**을 모두 수행합니다.
+
+---
+
+### 21. Code: class IssueCouponInput(BaseModel): ...
+
+`issue_coupon_for_delay`라는 이름의 도구를 정의하는 코드 셀입니다.
+
+```python
+# 입력 스키마 정의 (order_id 필요)
+class IssueCouponInput(BaseModel):
+    order_id: int = Field(description="쿠폰을 발급할 주문 ID")
+
+@tool(args_schema=IssueCouponInput)
+def issue_coupon_for_delay(order_id: int) -> str:
+    """
+    주문이 'Shipping Delayed' 상태인지 확인하고, 지연된 경우 쿠폰을 발급합니다.
+    (Checks if an order is delayed and issues a coupon if it is.)
+    """
+    # 1. DB에 연결하여 'status' 조회
+    conn = sqlite3.connect("orders.db")
+    cursor = conn.cursor()
+    cursor.execute("SELECT status FROM orders WHERE order_id = ?", (order_id,))
+    result = cursor.fetchone()
+    conn.close()
+
+    if result and result[0] == "Shipping Delayed":
+        # 2. 'Shipping Delayed'가 맞으면 쿠폰 코드 생성 (시뮬레이션)
+        coupon_code = f"DELAY{order_id}OFF5000"
+        return f"Order {order_id} is 'Shipping Delayed'. 5,000 KRW coupon ({coupon_code}) issued."
+    else:
+        # 3. 지연되지 않았거나 주문이 없으면 쿠폰 발급 거부
+        return f"Order {order_id} is not eligible for a delay coupon."
+```
+
+---
+
+### 22. Code: print(issue_coupon_for_delay.invoke(...))
+
+방금 만든 `issue_coupon_for_delay` 도구를 테스트하는 코드 셀입니다. 'Shipping Delayed' 상태인 1004번 주문(쿠폰 발급 성공)과 'Processing' 상태인 1001번 주문(쿠폰 발급 거부) 두 가지 시나리오를 모두 테스트합니다.
+
+---
+
+### 23. Markdown: ## 4. ReAct Agent 생성
+
+3개의 도구(`policy_search`, `check_order_status`, `issue_coupon_for_delay`)가 모두 준비되었으므로, 이 도구들을 사용할 Agent를 생성하는 섹션임을 알리는 텍스트 셀입니다.
+
+---
+
+### 24. Code: tools = [...] ... system_prompt = """..."""
+
+Agent를 생성하기 위한 핵심 요소인 **도구 리스트(tools)**와 **시스템 프롬프트(system_prompt)**를 정의하는 코드 셀입니다.
+
+```python
+# Agent가 사용할 도구들을 리스트로 묶습니다.
+tools = [policy_search, check_order_status, issue_coupon_for_delay]
+
+from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
+
+# Agent의 행동 규칙을 정의하는 '시스템 프롬프트'
+system_prompt = """
+You are a helpful customer service assistant ...
+당신은 유능한 고객 서비스 상담원입니다.
+반드시 한국어로 응답해야 합니다.
+
+주어진 도구를 사용하여 사용자의 질문에 답변하세요. ...
+
+# 도구 사용 규칙 (매우 중요):
+...
+- 'policy_search': 배송 정책 등 일반적인 정책 질문에 사용합니다.
+- 'check_order_status': 'order_id'가 명확할 때만 주문 상태 확인에 사용합니다.
+- 'issue_coupon_for_delay': 사용자가 '지연된 주문'에 대해 '쿠폰'을 요청할 때만 사용합니다.
+- 만약 'order_id'를 모른다면, 'check_order_status'나 'issue_coupon_for_delay'를 사용하기 전에
+  반드시 사용자에게 'order_id'를 물어봐야 합니다.
+"""
+
+# Agent가 사용할 전체 프롬프트 템플릿 (시스템 프롬프트 + 대화 내용 + T-A-O 기록)
+prompt = ChatPromptTemplate.from_messages(
+    [
+        ("system", system_prompt),
+        MessagesPlaceholder(variable_name="messages"),
+        MessagesPlaceholder(variable_name="agent_scratchpad"), # (Thought-Action-Observation)
+    ]
+)
+```
+
+---
+
+### 25. Code: llm = ChatUpstage(...) ... agent_executor = ...
+
+LLM에 도구를 바인딩(연결)하고, `langgraph`를 사용하여 ReAct Agent를 생성(조립)하는 코드 셀입니다.
+
+```python
+# temperature=0으로 설정하여 LLM이 일관된 답변을 하도록 함
+llm = ChatUpstage(model_name="solar-1-mini-chat", temperature=0)
+
+# LLM에 'tools' 리스트를 '바인딩'합니다. 
+# 이 과정을 통해 LLM은 도구의 존재와 그 Docstring(사용법)을 인지하게 됩니다.
+llm_with_tools = llm.bind_tools(tools)
+
+from langgraph.prebuilt import create_react_agent
+
+# LLM, 도구, 프롬프트를 결합하여 ReAct 로직을 수행하는 Agent Executor(실행기)를 생성합니다.
+agent_executor = create_react_agent(llm_with_tools, tools, prompt)
+```
+
+---
+
+### 26. Markdown: ## 5. Agent 테스트 (T-A-O 로그 관찰)
+
+생성된 Agent가 어떻게 생각하고 행동(T-A-O)하는지 관찰하는 테스트 섹션임을 알리는 텍스트 셀입니다.
+
+---
+
+### 27. Markdown: ### 5-1. 테스트 1: 단순 정책 질문 (RAG)
+
+"배송 정책 알려줘"라는 질문을 테스트합니다. Agent가 `policy_search` (RAG) 도구를 사용할 것으로 예상합니다.
+
+---
+
+### 28. Code: import pprint ... for s in agent_executor.stream(...):
+
+Agent를 **스트리밍(streaming)** 방식으로 실행하여, Agent의 '생각(Thought) -> 행동(Action) -> 관찰(Observation)' 과정을 실시간으로 출력하는 코드 셀입니다.
+
+- **실행 로그**:
+    1. **Thought**: 사용자가 '배송 정책'을 물어봄. `policy_search` 도구를 사용해야 함.
+    2. **Action**: `policy_search(query="배송 정책")` 호출.
+    3. **Observation**: (RAG 결과) "표준 배송은 3-5일..."
+    4. **Thought**: RAG 결과를 얻었으니, 이걸 정리해서 사용자에게 한국어로 답변해야 함.
+    5. **Final Answer**: (다음 셀에서 확인)
+
+---
+
+### 29. Code: result = agent_executor.invoke(...) ... pretty_print()
+
+스트리밍이 아닌 `invoke`로 Agent를 실행하여 최종 답변만 깔끔하게 출력하는 코드 셀입니다. Agent는 RAG 도구로 찾은 배송 정책 정보를 요약하여 답변합니다.
+
+---
+
+### 30. Markdown: ### 5-2. 테스트 2: 주문 ID 없는 상태 질문
+
+"내 주문 상태 어때?"처럼 주문 ID가 없는 질문을 테스트합니다. 시스템 프롬프트 규칙에 따라 도구를 호출하지 않고 ID를 되물어볼 것으로 예상합니다.
+
+---
+
+### 31. Code: messages = [...] ... for s in agent_executor.stream(...):
+
+테스트 2를 스트리밍으로 실행하는 코드 셀입니다.
+
+- **실행 로그**:
+    1. **Thought**: 사용자가 '주문 상태'를 물어봤지만 'order_id'가 없음. 시스템 규칙에 따라 `check_order_status` 도구를 사용하면 안 됨. 사용자에게 'order_id'를 요청해야 함.
+    2. **Final Answer**: "주문 번호를 알려주시겠어요?" (도구를 호출하지 않음)
+
+---
+
+### 32. Markdown: ### 5-3. 테스트 3: 주문 ID 있는 상태 질문
+
+"주문 1001번 상태 알려줘"처럼 주문 ID가 명확한 질문을 테스트합니다. `check_order_status` 도구를 사용할 것으로 예상합니다.
+
+---
+
+### 33. Code: messages = [...] ... for s in agent_executor.stream(...):
+
+테스트 3을 스트리밍으로 실행하는 코드 셀입니다.
+
+- **실행 로그**:
+    1. **Thought**: 사용자가 '1001번' 주문의 '상태'를 물어봄. `check_order_status` 도구를 `order_id=1001`로 호출해야 함.
+    2. **Action**: `check_order_status(order_id=1001)` 호출.
+    3. **Observation**: (DB 조회 결과) "Order 1001 is Processing."
+    4. **Thought**: 결과를 받았으니, 사용자에게 "주문 1001번의 상태는 'Processing'입니다."라고 답변해야 함.
+    5. **Final Answer**: "주문 1001번의 상태는 'Processing'입니다."
+
+---
+
+### 34. Markdown: ### 5-4. 테스트 4: 복합 질문 (지연 + 쿠폰)
+
+"주문 1004번 배송이 너무 늦는데, 쿠폰이라도 줘야 하는 거 아니야?"라는 복합적인(지연 불만 + 쿠폰 요청) 질문을 테스트합니다. `issue_coupon_for_delay` 도구를 사용할 것으로 예상합니다.
+
+---
+
+### 35. Code: messages = [...] ... for s in agent_executor.stream(...):
+
+테스트 4를 스트리밍으로 실행하는 코드 셀입니다.
+
+- **실행 로그**:
+    1. **Thought**: 사용자가 '1004번' 주문이 '늦는다'고 하며 '쿠폰'을 요청함. 이 상황에 정확히 맞는 `issue_coupon_for_delay` 도구를 `order_id=1004`로 호출해야 함.
+    2. **Action**: `issue_coupon_for_delay(order_id=1004)` 호출.
+    3. **Observation**: (DB 조회 및 쿠폰 발급 로직 실행 결과) "Order 1004 is 'Shipping Delayed'. 5,000 KRW coupon (DELAY1004OFF5000) issued."
+    4. **Thought**: 도구 실행 결과, 주문이 실제로 지연되어 쿠폰이 발급되었음. 이 사실과 쿠폰 코드를 사용자에게 안내해야 함.
+    5. **Final Answer**: "주문 1004번은 'Shipping Delayed' 상태로 확인되어... 5,000원 쿠폰(DELAY1004OFF5000)이 발급되었습니다."
+
+---
+
+### 36. Markdown: ## 6. (Extra) 대화 메모리(Memory) 추가하기
+
+현재 Agent는 이전 대화 내용을 기억하지 못하는 'Stateless' 상태임을 지적하고, `langgraph-checkpoint-sqlite`를 사용해 대화 기록을 저장하는 'Stateful' Agent로 업그레이드하는 방법을 설명하는 텍스트 셀입니다.
+
+---
+
+### 37. Code: from langgraph_checkpoint_sqlite import SqliteSaver ...
+
+`memory.sqlite` 파일을 사용하는 `SqliteSaver` (Checkpointer)를 생성하고, `create_react_agent` 함수에 `checkpointer=memory` 인자를 전달하여 **메모리 기능이 추가된 Agent** (`agent_with_memory`)를 생성하는 코드 셀입니다.
+
+- `config = {"configurable": {"thread_id": "1"}}`: 사용자별(또는 대화 세션별)로 대화 기록을 구분하기 위해 'thread_id'를 설정합니다.
+
+---
+
+### 38. Markdown: ### 6-1. 메모리 테스트: 다중 턴(Multi-Turn) 대화
+
+메모리가 잘 작동하는지 다중 턴 대화로 테스트하는 시나리오를 설명하는 텍스트 셀입니다.
+
+- **Query 1 (사용자)**: "주문 1004번 상태 어때?"
+- **Query 2 (사용자)**: "배송이 늦어지는데 쿠폰 발급해줘" (Agent는 '주문 1004번'을 기억해야 함)
+- **Query 3 (사용자)**: "뭐야 쿠폰 왜 주는거야?" (Agent는 '쿠폰 발급' 사실과 '배송 지연' 때문임을 기억하고, 정책을 검색해야 함)
+
+---
+
+### 39. Code: print("--- User (Query 1) ---") ... print("\n--- User (Query 2) ---") ...
+
+메모리 테스트의 Query 1과 Query 2를 실행하는 코드 셀입니다.
+
+- **Query 1 실행**: Agent가 `check_order_status`를 호출하여 "Shipping Delayed"임을 확인하고 답변합니다. 이 대화 내용이 `memory.sqlite` (thread_id=1)에 저장됩니다.
+- **Query 2 실행**:
+    - **Thought**: 사용자가 '쿠폰 발급'을 요청함. **이전 대화(메모리)**를 보니 '주문 1004번'에 대해 이야기하고 있었고, 그 주문은 'Shipping Delayed' 상태였음. 따라서 `issue_coupon_for_delay`를 `order_id=1004`로 호출해야 함.
+    - **Action**: `issue_coupon_for_delay(order_id=1004)` 호출.
+    - **Final Answer**: 쿠폰 발급을 안내합니다. (메모리 작동 성공!)
+
+---
+
+### 40. Code: print("\n--- User (Query 3) ---") ...
+
+메모리 테스트의 Query 3을 실행하는 코드 셀입니다. 이 부분이 이 Notebook의 하이라이트입니다.
+
+- **Query 3 실행**:
+    - **Thought**: 사용자가 '쿠폰을 왜 주는지' 물어봄. **이전 대화(메모리)**를 보니 '주문 1004번'이 '배송 지연(Shipping Delayed)'되어 '쿠폰'을 발급했음. 그렇다면 '배송 지연 시 쿠폰 발급 정책'에 대해 RAG 검색을 해야 함. `policy_search` 도구를 사용해야겠다.
+    - **Action**: `policy_search(query="배송 지연 시 쿠폰 발급 정책")` 호출.
+    - **Observation**: (RAG 결과) "주문이 3일 이상 지연될 경우... 5,000원 할인 쿠폰이 발급됩니다."
+    - **Thought**: 정책을 찾았음. 이 내용을 바탕으로 사용자에게 답변해야 함.
+    - **Final Answer**: "배송 정책에 따라 3일 이상 지연된 주문(1004번)에 대해 5,000원 쿠폰이 발급되었습니다."
+    - (메모리와 RAG 도구를 모두 활용하는 복합 추론 성공!)
+
+---
+
+### 41. Code: print("\n--- 'thread_id=1'의 전체 대화 기록 ---") ...
+
+마지막으로, `checkpointer.get(config)`를 사용하여 `memory.sqlite`에 저장된 'thread_id=1'의 전체 대화 기록(사용자 질문, AI 답변, 도구 호출/결과)을 모두 출력하여 확인하는 코드 셀입니다.
+
+---
+
+# AI 모델 활용 
+-가속기 구동을 위한 100% 정수연산 양자화-
+
+![image.png](attachment:806584d3-67c7-41e3-a04d-4ca3f09f6366:image.png)
+
+![image.png](attachment:2ae4830a-0433-4540-aafc-e686276c8a63:image.png)
+
+과감한 pass~
+
+# 테스트 타임 도메인 적응
+
+1. 분포이동과 테스트타임 도메인 적응(TTA)
+    - 분포 이동 : AI가 실제 쓰일 때, 학습 데이터에서 경험하지 못했던 낯선 데이터를 마주하는 현상
+        
+        → AI 성능 하락의 주요 원인
+        
+        ![image.png](attachment:368cf403-f4a6-443f-ac90-26ab8a5084df:image.png)
+        
+    - 테스트타임 도메인 적응(TTA)
+    : AI가 실제 쓰일 때, 테스트 데이터의 분포를 파악하여 모델을 유연하게 적응시킴
+        
+        → 테스트데이터를 입력받을때, 모델의 일부를 새 데이터의 통계에 맞게 재조정하여 성능 유지
+        
+        ![image.png](attachment:4d76e579-482b-4d04-ae32-b00bf3ef75c5:image.png)
+        
+2. TTA 기법
+    - CNN 기반 TTA 기법
+        
+        ![image.png](attachment:9fb1b160-750d-4cf5-9532-5fd4addd6e2c:image.png)
+        
+        ![image.png](attachment:75d21e36-89d6-446b-84a2-3c0daae6c8f8:image.png)
+        
+    - 비전언어모델 기반 TTA 기법
+        
+        ![image.png](attachment:5b8eb962-ad68-4cca-a41a-0ef416da7bf2:image.png)
+        
+        ![image.png](attachment:01a17168-0db3-4aad-8752-1220a4aa7915:image.png)
+        
+        ![image.png](attachment:3b7d90ce-3457-4021-85bc-54f41e6646eb:image.png)
+        
+
+# 적응적 센싱
+
+1. 초거대 AI의 근본 원리와 한계
+    - 스케일링의 법칙과 초거대 AI
+        
+        ![image.png](attachment:7e432f35-b532-4690-8298-fab450d53aef:image.png)
+        
+        ![image.png](attachment:3a315675-6944-43c9-a0c0-26e3c9029b37:image.png)
+        
+        ![image.png](attachment:299564b4-184e-49a8-9d71-8bf91ab03d5c:image.png)
+        
+    - 스케일링 전략의 한계
+        
+        ![image.png](attachment:335f41ad-09c9-4dc0-85be-b50b6ba7781b:image.png)
+        
+        ![image.png](attachment:5332231a-d099-40a6-b294-4f354ced353a:image.png)
+        
+    
+2. 적응적 센싱을 통한 분포 이동 억제
+    - 인간의 인지체계
+        
+        ![image.png](attachment:5e2fa629-ba22-4eb1-9377-d2c30234ab23:image.png)
+        
+    - 적응적 센싱 : AI를 위한 안경
+        
+        ![image.png](attachment:cdaf11fb-ecea-47db-82c5-58e679e39f67:image.png)
+        
+        ![image.png](attachment:621bf212-e3a3-42b6-acad-08c961584491:image.png)
+        
+        ![image.png](attachment:330c39c9-a326-48f9-9dea-fb06f76d12c4:image.png)
+        
+    - 적응적 센싱을 위한 데이터셋
+        
+        ![image.png](attachment:0b19777a-6577-4cae-9451-2a4906d2da9e:image.png)
+        
+    - 적응적 센싱 기법 : Lens
+        
+        ![image.png](attachment:ba2af930-6484-4774-8d4b-0e8dd18d7b51:image.png)
+        
+    - 성능 효과
+        
+        ![image.png](attachment:b60c7988-4ff1-4f3b-9d7a-8f317a0541d0:image.png)
+        
+        ![image.png](attachment:c171188c-0ceb-4922-bf99-0711bc40c714:image.png)
+        
+    - 특징과 함의
+        
+        ![image.png](attachment:66202dc4-871a-4570-b33d-29fe15db19be:image.png)
+        
+
+# 응용 분야 전문 지식을 활용한 모델 설계 -의료편-
+
+도메인 특화 AI 모델을 제작하고자 한다면, 그 도메인의 전문지식을 이해해야함
+
+→ AI 전문가와 도메인 전문가의 긴밀한 협업이 필수!
+
+> 수면질환은 진단이 복잡하여 치료가 난해하기 때문에, 수면 의학을 위한 AI가 필요하다!
+> 
+1. 수면다원검사 자동채점 AI
+    - 자동진단 AI 개발의 도전성
+        
+        ![image.png](attachment:d7468806-c251-472b-97e8-1a4b41c901c5:image.png)
+        
+    - 도메인 전문지식 주입 과정
+        - 이미지 데이터 포멧 변환
+            
+            ![image.png](attachment:00464493-048e-4f25-ab07-06e8250335b6:image.png)
+            
+        - 비전 트랜스포머 기반 신경망 학습
+            
+            ![image.png](attachment:397a55e8-a54d-4cfc-8834-cf64a8a42b0e:image.png)
+            
+        - 에폭 간 맥락 파악 및 결과 보정
+            
+            ![image.png](attachment:ea0d67a3-809c-4804-b086-dcea1755eab1:image.png)
+            
+            ![image.png](attachment:82a79f83-c803-4d14-a550-7e8859d33b00:image.png)
+            
+    - 성능 평가
+        
+        ![image.png](attachment:007f401a-df5c-458b-8f03-6a44c244c6db:image.png)
+        
+        ![image.png](attachment:0f17f216-391c-4ce0-b504-6743ded18128:image.png)
+        
+2. 비접촉식 수면 무호흡증 진단 AI
+    - 필요성
+        
+        ![image.png](attachment:87a45087-23c0-407c-be5f-52a042b685ff:image.png)
+        
+        ![image.png](attachment:12cfd146-b023-428c-9cd5-06c28d97da94:image.png)
+        
+    - 도메인 전문지식 주입 과정
+        - 수면 영상 데이터셋
+            
+            ![image.png](attachment:c90ea673-fa48-4f67-a270-a98876ea7e56:1c3d4ebb-e877-411f-9d5a-81f5ccb6fd42.png)
+            
+        - 무호흡증 감지에서 호흡 각성 감지로
+            
+            ![image.png](attachment:ced024cc-d93d-4b38-9bcd-f6e73e9d9854:image.png)
+            
+        - 호흡 각성 vs 자발적 각성
+            
+            ![image.png](attachment:aadd4e24-1174-4820-8d74-824ebafd8f9b:image.png)
+            
+        - 온디바이스 AI 파이프라인 설계
+            
+            ![image.png](attachment:b27bc0c1-04cb-47df-8ed1-0c5a94398ada:image.png)
+            
+    - 성능 평가
+        
+        ![image.png](attachment:b6fa953f-d138-4537-9302-f30c011e562b:image.png)
