@@ -1,0 +1,120 @@
+1103 DB SQL1
+
+# 데이터베이스
+
+DB : 체게적으로 정리된 데이터의 모음
+
+데이터 : 저장이나 처리를 위해 변환된 정보
+
+- 테이블, 행, 열의 정보를 구조화하는 방식
+- 서로 관련된 데이터 포인터를 저장하고 이에 대한 액세스를 제공
+
+**관계** : 여러 테이블 간의 (논리적) 연결
+
+→ 관계로 인해 복수의 테이블을 사용하여 데이터를 다양한 형식으로 조회 가능
+
+**용어**
+
+- Table ( Relation )
+- Field ( Column, Attribute )
+- Record ( Row, Tuple )
+- Datebase ( Schema )
+- Primary key
+- Foreign key
+
+---
+
+# RDBMS
+
+DBMS : 데이터베이스를 관리하는 소프트웨어 프로그램
+
+RDBMS : 데이터 간에 관계가 있는 데이터 항목들의 모음
+
+**종류**
+
+- SQLite
+- MySQL
+- PostgreSQL
+- Oracle Database
+- …
+
+**SQLite**
+
+- 경량의 오픈 소스 데이터베이스 관리 시스템
+- 설치 없이 가볍게 실행 가능해 모바일 앱이나 소규모 프로그램에 적합
+
+→ 컴퓨터나 모바일 기기에 내장되어 간단하고 효율적인 데이터 저장 및 관리를 제공
+
+# SQL
+
+: Structure Query Language
+
+: 테이블의 형태로 구조화된 관계형 데이터베이스에게 요청을 질의(요청)
+
+**SQL Statements**
+
+ ex) SELECT column_name FROM table_name;
+
+- DDL - 데이터 정의 (definition)
+- DQL - 데이터 검색 (Query)
+- DML - 데이터 조작 (Manipulation)
+- DCL - 데이터 제어 (Control)
+
+![image.png](attachment:5eabbf03-930f-41d1-a303-9d54c085cd56:image.png)
+
+### Querying data
+
+**DQL - SELECT**
+
+Syntax : SELECT column_name FROM table_name;
+
+### Sorting data
+
+**ORDER BY**
+
+Syntax : SELECT column_name FROM table_name ORDER BY Column1 [ASC|DESC];
+
+SELECT statement **실행순서**
+
+FROM → SELECT → ORDER BY
+
+### Filtering data
+
+- Clause (절)
+    - DISTINCT : SELECT 바로 뒤에 작성해서 중복된 레코드를 제거
+    - WHERE : FROM절 뒤에 위치, 연산자를 사용한 조회 조건으로 필터링
+    - LIMIT : 하나 또는 두 개의 인자를 사용, ORDER BY 뒤에!
+        
+        ex) LIMIT (offset,) row_count → offset은 생략할 컬럼수 row_count는 최대 레코드수
+        
+- Operator (연산자)
+    - BETWEEN
+    - IN
+    - LIKE
+    - Comparison
+    - Logical
+
+### Filtering data
+
+GROUP BY : FROM이나 WHERE 뒤에 위치. 그룹화할 필드 목록 작성
+
+- Aggregation Functions ( 집계 함수 )
+    
+    : SUM, AVG, MAX, MIN, COUNT
+    
+    → 집계함수를 조건으로 쓸 때는 WHERE절에서 못쓰고 HAVING 절에서만 가능!!
+    
+
+HAVING : 집계 항목에 대한 세부 조건을 지정
+
+→ 주로 GROUP BY와 함께 사용되며 없다면 WHERE 처럼 동작
+
+![image.png](attachment:22f339e4-21e1-45ce-8f37-ea83dd48ef6d:image.png)
+
+![image.png](attachment:5315bdb2-d4f2-4b4f-8869-5976829504f9:image.png)
+
+### SELECT statements 실행 순서
+
+FROM → WHERE → GROUPBY → HAIVNG → SELECT → ORDERBY → LIMIT
+
+![image.png](attachment:6509916c-f0dd-47fc-ba5d-ee9b4dce3391:image.png)
