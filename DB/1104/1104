@@ -1,0 +1,151 @@
+1104 DB SQL2
+
+### Managing Tables
+
+**DDL** : CREATE, DROP, ALTER
+
+- **CREATE**
+    
+    CREATE TABLE table_name ( 
+    
+    column_1 data_type constrains,
+    
+    …
+    
+     );
+    
+- **ALTER (테이블 조작)**
+    - ALTER TABLE ADD COLUMN : 필드 추가
+        
+        ```sql
+        ALTER TABLE
+            examples
+        ADD COLUMN
+            Age INTEGER NOT NULL DEFAULT 0;
+        ```
+        
+        → sqlite는 단일 문을 사용하여 한번에 여러 컬럼을 추가하는 것을 지원하지 않음
+        
+    - ALTER TABLE RENAME COLUMN : 필드이름 변경
+        
+        바꾸려는 컬럼명 뒤어 TO 키워드 쓰고 새 이름
+        
+        ```sql
+        ALTER TABLE
+            examples
+        RENAME COLUMN
+            ExId TO ExamID;
+        ```
+        
+    - ALTER TABLE DROP COLUMN : 필드 삭제
+        
+        ```sql
+        ALTER TABLE
+            examples
+        DROP
+            new_examples;
+        ```
+        
+    - ALTER TABLE RENAME TO : 테이블명 변경
+        
+        ```sql
+        ALTER TABLE
+            examples
+        RENAME TO
+            new_examples;
+        ```
+        
+- **DROP**
+    
+    DROP TABLE table_name : 테이블 삭제
+    
+- 그외
+    - PRAGMA : schema(구조) 확인
+        
+        PRAGMA table_info(’example’);
+        
+    - 데이터 타입
+        - REAL : 부동 소수점
+        - BLOB : 이미지, 동영상, 문서 등의 바이너리 데이터
+
+**제약조건 :** PRIMARY KEY, NOT NULL, FOREIGN KEY, …
+
+**속성** : AUTOINCREMENT ( = 시퀀스 ) ← PK여야 함
+
+### **Modifying data**
+
+DML : INSERT, UPDATE, DELETE
+
+- INSERT
+    
+    ```
+    INSERT INTO 
+        articles(title, content, createdAt)
+    VALUES
+        ('hello', 'world', '2000-01-01');
+    ```
+    
+- UPDATE
+    
+    ```sql
+    UPDATE
+        articles
+    SET
+        title = 'updated'
+    WHERE
+        id = 1;
+    ```
+    
+- DELETE
+    
+    ```sql
+    DELETE FROM
+        articles
+    WHERE
+        id = 1;
+    ```
+    
+
+### Multi table queried
+
+**join**
+
+- INNER JOIN
+    
+    : 두 테이블에서 값이 일치하는 레코드에 대해서만 결과 반환
+    
+    ```sql
+    SELECT 
+      *
+    FROM
+      articles
+    INNER JOIN users
+      ON users.id = articles.userId;
+    ```
+    
+- LEFT JOIN
+    
+    : 일치하는 레코드와 함께 왼쪽 테이블의 모든 레코드 반환
+    
+    ```sql
+    SELECT 
+      *
+    FROM
+      articles
+    LEFT JOIN users
+      ON users.id = articles.userId;
+    ```
+    
+    - 응용1 : 게시글을 작성한 이력이없는 회원 찾기
+        
+        ```sql
+        SELECT 
+          *
+        FROM
+          users
+        LEFT JOIN articles
+          ON users.id = articles.userId
+        WHERE
+          articles.userid ISNULL;
+        ```
+        

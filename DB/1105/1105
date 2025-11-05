@@ -1,0 +1,75 @@
+1105 DB N:1 1
+
+**Many to one relationships**
+
+관계 : DB 내 여러 테이블 간의 논리적인 연결관계를 나타냄
+
+![image.png](attachment:d807a447-cec3-4d52-8a1c-bdba672503f3:image.png)
+
+**ForeignKey**(to, on_delete) ← N:1 관계 표현할 때 사용
+
+: 한 모델이 다른 모델을 참조하는 관계를 설정하는 필드
+
+- to 속성 : 참조하는 모델 class 이름 (N:1에서 N이 아닌 1의 class 정보)
+- on_delete : 그 대상이 삭제되었을 때, 외래키를 가진 객체(N)를 어떻게 처리할 지를 정의
+    - CASCADE
+    - PROTECT
+    - SET_NULL
+    - 기타 등등
+
+**댓글 생성**
+
+```python
+class Comment(models.Model):
+    article = models.ForeignKey(Article, on_delete=models.CASCADE)
+    # 관계를 설정하는 건 위로 작성하는 편
+    content = models.CharField(max_length=200)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+```
+
+이렇게 생성하고 migrate 하면 DB에 _id가 붙어서 article_id와 같은 식으로 외래키가 저장됨
+
+but, 다룰 때는 class에 저장된 형식 article이 나을 듯
+
+그리고 shell에서 진행
+
+![image.png](attachment:8b5e52fc-5845-4e9e-bce2-3b93b8b93045:image.png)
+
+![image.png](attachment:b5074805-9499-4b80-9c20-5ca3b3c64b0e:image.png)
+
+![image.png](attachment:00d1765f-6f55-498d-8c40-68375c9b6866:image.png)
+
+![image.png](attachment:d5a2be70-50ba-4a0f-9761-4557105a1045:image.png)
+
+![image.png](attachment:5ac8c42b-875b-43ad-8f90-da084fc21497:image.png)
+
+![image.png](attachment:987983b6-f552-4161-b192-ce13fb905e8f:image.png)
+
+**관계 모델 참조**
+
+참조 : 직접 대상의 정보를 저장하고 필요할 때 활용하는 것
+
+역참조 : 누가 나를 참조하는지 거꾸로 조회하는 것
+
+기본 구조 : 모델인스턴스.역참조이름.QuerySetAPI
+
+ex) article.comment_set.all()
+
+- 댓글 CREATE (주의사항)
+    
+    ![image.png](attachment:84ddfbdd-810d-4860-a816-34dcf24a56a4:image.png)
+    
+    ![image.png](attachment:d4b8a627-5c74-4d8a-a251-1540aee5f00d:image.png)
+    
+
+- 댓글 READ
+    
+    ![image.png](attachment:9c2ea32f-bbd5-4e26-a42c-9a0b16fab31c:image.png)
+    
+
+- 댓글 DELETE
+    
+    ![image.png](attachment:e4df3c01-2a88-48a1-a113-7c4e0436220f:image.png)
+    
+    ![image.png](attachment:5262356d-bd14-4367-a6ee-3492693995a4:image.png)
