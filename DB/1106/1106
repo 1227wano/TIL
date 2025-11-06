@@ -1,0 +1,31 @@
+1106 DB N:1 2
+
+url : https://www.notion.so/1106-DB-N-1-2-2a0ee2a063c880c39097efb11bd35906?source=copy_link
+
+## 게시글 CREATE
+
+![image.png](attachment:b62a02ac-92ef-40cc-b822-68a37553279d:image.png)
+
+![image.png](attachment:45e7da24-e37e-46be-a21b-f78bb0d96907:image.png)
+
+---
+
+## 게시글 UPDATE (DELETE도 동일)
+
+![image.png](attachment:1a4f335e-6cc3-4de9-98d1-38c3555db419:image.png)
+
+![image.png](attachment:1207395e-2312-4c89-be3a-4d18de4a5b93:image.png)
+
+### View Decorators (어노테이션같은애)
+
+주요 Allowed HTTP methods
+
+![image.png](attachment:eeeb9d24-26cc-4a96-b5f6-c1d5997542f7:image.png)
+
+→ require_GET()은 쓰지 말것~
+
+! 주의 ! 데코레이터의 순서가 중요하거나 중복이 안되는 경우도 있음
+
+## ERD
+
+![image.png](attachment:dd08c064-aaa6-4941-9059-d17355e264cf:image.png)
