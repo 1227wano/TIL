@@ -1,0 +1,382 @@
+### Branch
+
+- git branch : 브랜치 목록 확인
+- git branch -r : 원격 저장소의 브랜치 목록 확인
+- git branch <브랜치이름> : 새로운 브랜치 생성
+- git branch -d <브랜치이름> : 브랜치 삭제 ( 병합된 브랜치만 )
+- git branch -D <브랜치이름> : 브랜치 강제 삭제
+
+### switch
+
+- git switch <다른 브랜치 이름> : 다른 브랜치로 전환
+- git switch -c <브랜치이름> : 새 브랜치 생성 후 전환
+- git switch -c <브랜치이름> <commit ID> : 특정 커밋에서 새 브랜치 생성 후 전환
+
+HEAD : 현재 브랜치나 commit을 가리키는 포인터
+
+### Merge
+
+![image.png](attachment:e63bef22-ab28-4a9c-bbb1-434b99c857ea:image.png)
+
+- Fast-Forward Merge
+    
+    : 실제로 병합하는것이 아닌, 브랜치 포인터를 최신으로 이동시키는 작업
+    
+    ![image.png](attachment:da8fe4a3-d000-4f8c-bca9-778823ef8e92:image.png)
+    
+
+- 여기까지의 터미널 기록
+    
+    ```smalltalk
+    
+    SSAFY@2□□PC179 MINGW64 ~/pjt/pjt-06/live_codes/live-codes (master)
+    $ cd 00-git-switch-warning/
+    
+    SSAFY@2□□PC179 MINGW64 ~/pjt/pjt-06/live_codes/live-codes/00-git-switch-warning (master)
+    $ git switch feature
+    Switched to branch 'feature'
+    
+    SSAFY@2□□PC179 MINGW64 ~/pjt/pjt-06/live_codes/live-codes/00-git-switch-warning (feature)
+    $ cd __/01-git-pracitice/
+    bash: cd: __/01-git-pracitice/: No such file or directory
+    
+    SSAFY@2□□PC179 MINGW64 ~/pjt/pjt-06/live_codes/live-codes/00-git-switch-warning (feature)
+    $ cd __/01-git-branch-practice
+    bash: cd: __/01-git-branch-practice: No such file or directory
+    
+    SSAFY@2□□PC179 MINGW64 ~/pjt/pjt-06/live_codes/live-codes/00-git-switch-warning (feature)
+    $ cd ../01-git-branch-practice
+    
+    SSAFY@2□□PC179 MINGW64 ~/pjt/pjt-06/live_codes/live-codes/01-git-branch-practice (master)
+    $ git log --oneline
+    d7d2a3d (HEAD -> master) master-3
+    f50bd3f master-2
+    eaaa940 master-1
+    
+    SSAFY@2□□PC179 MINGW64 ~/pjt/pjt-06/live_codes/live-codes/01-git-branch-practice (master)
+    $ git branch login
+    
+    SSAFY@2□□PC179 MINGW64 ~/pjt/pjt-06/live_codes/live-codes/01-git-branch-practice (master)
+    $ git branch
+      login
+    * master
+    
+    SSAFY@2□□PC179 MINGW64 ~/pjt/pjt-06/live_codes/live-codes/01-git-branch-practice (master)
+    $ git add .
+    
+    SSAFY@2□□PC179 MINGW64 ~/pjt/pjt-06/live_codes/live-codes/01-git-branch-practice (master)
+    $ git commit -m "master-4"
+    [master 7977f63] master-4
+     1 file changed, 2 insertions(+), 1 deletion(-)
+    
+    SSAFY@2□□PC179 MINGW64 ~/pjt/pjt-06/live_codes/live-codes/01-git-branch-practice (master)
+    $ git log --oneline
+    7977f63 (HEAD -> master) master-4
+    d7d2a3d (login) master-3
+    f50bd3f master-2
+    eaaa940 master-1
+    
+    SSAFY@2□□PC179 MINGW64 ~/pjt/pjt-06/live_codes/live-codes/01-git-branch-practice (master)
+    $ git switch login
+    Switched to branch 'login'
+    
+    SSAFY@2□□PC179 MINGW64 ~/pjt/pjt-06/live_codes/live-codes/01-git-branch-practice (login)
+    $ git log --oneline
+    d7d2a3d (HEAD -> login) master-3
+    f50bd3f master-2
+    eaaa940 master-1
+    
+    SSAFY@2□□PC179 MINGW64 ~/pjt/pjt-06/live_codes/live-codes/01-git-branch-practice (login)
+    $ git log --oneline --all
+    7977f63 (master) master-4
+    d7d2a3d (HEAD -> login) master-3
+    f50bd3f master-2
+    eaaa940 master-1
+    
+    SSAFY@2□□PC179 MINGW64 ~/pjt/pjt-06/live_codes/live-codes/01-git-branch-practice (login)
+    $ git add .
+    
+    SSAFY@2□□PC179 MINGW64 ~/pjt/pjt-06/live_codes/live-codes/01-git-branch-practice (login)
+    $ git commit -m "login-1"
+    [login fa93456] login-1
+     2 files changed, 3 insertions(+), 1 deletion(-)
+     create mode 100644 test_login.txt
+    
+    SSAFY@2□□PC179 MINGW64 ~/pjt/pjt-06/live_codes/live-codes/01-git-branch-practice (login)
+    $ git log --oneline --all --graph
+    * fa93456 (HEAD -> login) login-1
+    | * 7977f63 (master) master-4
+    |/
+    * d7d2a3d master-3
+    * f50bd3f master-2
+    * eaaa940 master-1
+    
+    SSAFY@2□□PC179 MINGW64 ~/pjt/pjt-06/live_codes/live-codes/01-git-branch-practice (login)
+    $ git log --oneline
+    fa93456 (HEAD -> login) login-1
+    d7d2a3d master-3
+    f50bd3f master-2
+    eaaa940 master-1
+    
+    SSAFY@2□□PC179 MINGW64 ~/pjt/pjt-06/live_codes/live-codes/01-git-branch-practice (login)
+    $ cd ../02-fast-forward-practice/
+    
+    SSAFY@2□□PC179 MINGW64 ~/pjt/pjt-06/live_codes/live-codes/02-fast-forward-practice (master)
+    $ git log --oneline
+    95d8658 (HEAD -> master) c2
+    d33fd57 c1
+    
+    SSAFY@2□□PC179 MINGW64 ~/pjt/pjt-06/live_codes/live-codes/02-fast-forward-practice (master)
+    $ git switch -c hotfix
+    Switched to a new branch 'hotfix'
+    
+    SSAFY@2□□PC179 MINGW64 ~/pjt/pjt-06/live_codes/live-codes/02-fast-forward-practice (hotfix)
+    $ git add .
+    
+    SSAFY@2□□PC179 MINGW64 ~/pjt/pjt-06/live_codes/live-codes/02-fast-forward-practice (hotfix)
+    $ git commit -m "c3"
+    [hotfix fe00ec8] c3
+     1 file changed, 2 insertions(+), 1 deletion(-)
+    
+    SSAFY@2□□PC179 MINGW64 ~/pjt/pjt-06/live_codes/live-codes/02-fast-forward-practice (hotfix)
+    $ git add .
+    
+    SSAFY@2□□PC179 MINGW64 ~/pjt/pjt-06/live_codes/live-codes/02-fast-forward-practice (hotfix)
+    $ git commit -m "c4"
+    [hotfix 15ad2ed] c4
+     1 file changed, 2 insertions(+), 1 deletion(-)
+    
+    SSAFY@2□□PC179 MINGW64 ~/pjt/pjt-06/live_codes/live-codes/02-fast-forward-practice (hotfix)
+    $ git log --oneline --all
+    15ad2ed (HEAD -> hotfix) c4
+    fe00ec8 c3
+    95d8658 (master) c2
+    d33fd57 c1
+    
+    SSAFY@2□□PC179 MINGW64 ~/pjt/pjt-06/live_codes/live-codes/02-fast-forward-practice (hotfix)
+    $ git switch master
+    Switched to branch 'master'
+    
+    SSAFY@2□□PC179 MINGW64 ~/pjt/pjt-06/live_codes/live-codes/02-fast-forward-practice (master)
+    $ git merge hotfix
+    Updating 95d8658..15ad2ed
+    Fast-forward
+     article.txt | 4 +++-
+     1 file changed, 3 insertions(+), 1 deletion(-)
+    
+    SSAFY@2□□PC179 MINGW64 ~/pjt/pjt-06/live_codes/live-codes/02-fast-forward-practice (master)
+    $ git log --oneline --all
+    15ad2ed (HEAD -> master, hotfix) c4
+    fe00ec8 c3
+    95d8658 c2
+    d33fd57 c1
+    
+    SSAFY@2□□PC179 MINGW64 ~/pjt/pjt-06/live_codes/live-codes/02-fast-forward-practice (master)
+    $ git branch -d hotfix
+    Deleted branch hotfix (was 15ad2ed).
+    ```
+    
+
+- 3-Way Merge
+    
+    : 병합하는 각 브랜치의 commit 2개와 공통 조상 commit 하나를 사용하여 병합하는 작업
+    
+    ![image.png](attachment:0a093e1a-2374-465d-af0d-714b3059da3f:image.png)
+    
+    근데 merge할때 Vim 에디터가 뜬다. (INSERT라면 esc 누르고) :wq 입력하면 처리됨
+    
+
+### Merge Conflict
+
+- 여기까지의 터미널 기록
+    
+    ```smalltalk
+    
+    SSAFY@2□□PC179 MINGW64 ~/pjt/pjt-06/live_codes/live-codes/02-fast-forward-practice (master)
+    $ cd ../03-way-merge-practice/
+    
+    SSAFY@2□□PC179 MINGW64 ~/pjt/pjt-06/live_codes/live-codes/03-way-merge-practice (hotfix)
+    $ git log --oneline --all
+    5cdb32a (HEAD -> hotfix) c4
+    78ce30e c3
+    c4d396a (master) c2
+    47bdfdd c1
+    
+    SSAFY@2□□PC179 MINGW64 ~/pjt/pjt-06/live_codes/live-codes/03-way-merge-practice (hotfix)
+    $ git switch master
+    Switched to branch 'master'
+    
+    SSAFY@2□□PC179 MINGW64 ~/pjt/pjt-06/live_codes/live-codes/03-way-merge-practice (master)
+    $ git add .
+    
+    SSAFY@2□□PC179 MINGW64 ~/pjt/pjt-06/live_codes/live-codes/03-way-merge-practice (master)
+    $ git commit -m "c5"
+    [master 3244884] c5
+     1 file changed, 2 insertions(+), 1 deletion(-)
+    
+    SSAFY@2□□PC179 MINGW64 ~/pjt/pjt-06/live_codes/live-codes/03-way-merge-practice (master)
+    $ git log --oneline --all --graph
+    * 3244884 (HEAD -> master) c5
+    | * 5cdb32a (hotfix) c4
+    | * 78ce30e c3
+    |/
+    * c4d396a c2
+    * 47bdfdd c1
+    
+    SSAFY@2□□PC179 MINGW64 ~/pjt/pjt-06/live_codes/live-codes/03-way-merge-practice (master)
+    $ git merge hotfix
+    Merge made by the 'ort' strategy.
+     hotfix-article.txt | 2 ++
+     1 file changed, 2 insertions(+)
+     create mode 100644 hotfix-article.txt
+    
+    SSAFY@2□□PC179 MINGW64 ~/pjt/pjt-06/live_codes/live-codes/03-way-merge-practice (master)
+    $ git log --oneline --all --graph
+    *   d5c00ec (HEAD -> master) Merge branch 'hotfix'
+    |\
+    | * 5cdb32a (hotfix) c4
+    | * 78ce30e c3
+    * | 3244884 c5
+    |/
+    * c4d396a c2
+    * 47bdfdd c1
+    
+    SSAFY@2□□PC179 MINGW64 ~/pjt/pjt-06/live_codes/live-codes/03-way-merge-practice (master)
+    $ git branch -d hotfix
+    Deleted branch hotfix (was 5cdb32a).
+    
+    SSAFY@2□□PC179 MINGW64 ~/pjt/pjt-06/live_codes/live-codes/03-way-merge-practice (master)
+    $ git log --oneline --all --graph
+    *   d5c00ec (HEAD -> master) Merge branch 'hotfix'
+    |\
+    | * 5cdb32a c4
+    | * 78ce30e c3
+    * | 3244884 c5
+    |/
+    * c4d396a c2
+    * 47bdfdd c1
+    
+    SSAFY@2□□PC179 MINGW64 ~/pjt/pjt-06/live_codes/live-codes/03-way-merge-practice (master)
+    $ cd ../04-merge-conflict-practice/
+    
+    SSAFY@2□□PC179 MINGW64 ~/pjt/pjt-06/live_codes/live-codes/04-merge-conflict-practice (master)
+    $ git log --oneline --all --graph
+    * fd5079f (HEAD -> master) c4
+    * d002098 c3
+    * b0172ca (hotfix) c2
+    * aeebd0d c1
+    
+    SSAFY@2□□PC179 MINGW64 ~/pjt/pjt-06/live_codes/live-codes/04-merge-conflict-practice (master)
+    $ git switch hotfix
+    Switched to branch 'hotfix'
+    
+    SSAFY@2□□PC179 MINGW64 ~/pjt/pjt-06/live_codes/live-codes/04-merge-conflict-practice (hotfix)
+    $ git switch master
+    Switched to branch 'master'
+    
+    SSAFY@2□□PC179 MINGW64 ~/pjt/pjt-06/live_codes/live-codes/04-merge-conflict-practice (master)
+    $ git switch hotfix
+    Switched to branch 'hotfix'
+    
+    SSAFY@2□□PC179 MINGW64 ~/pjt/pjt-06/live_codes/live-codes/04-merge-conflict-practice (hotfix)
+    $ git add .
+    
+    SSAFY@2□□PC179 MINGW64 ~/pjt/pjt-06/live_codes/live-codes/04-merge-conflict-practice (hotfix)
+    $ git commit -m "c5"
+    [hotfix 6c21da3] c5
+     1 file changed, 2 insertions(+), 1 deletion(-)
+    
+    SSAFY@2□□PC179 MINGW64 ~/pjt/pjt-06/live_codes/live-codes/04-merge-conflict-practice (hotfix)
+    $ git switch master
+    Switched to branch 'master'
+    
+    SSAFY@2□□PC179 MINGW64 ~/pjt/pjt-06/live_codes/live-codes/04-merge-conflict-practice (master)
+    $ git merge hotfix
+    Auto-merging article.txt
+    CONFLICT (content): Merge conflict in article.txt
+    Automatic merge failed; fix conflicts and then commit the result.
+    
+    SSAFY@2□□PC179 MINGW64 ~/pjt/pjt-06/live_codes/live-codes/04-merge-conflict-practice (master|MERGING)
+    $ git status
+    On branch master
+    You have unmerged paths.
+      (fix conflicts and run "git commit")
+      (use "git merge --abort" to abort the merge)
+    
+    Unmerged paths:
+      (use "git add <file>..." to mark resolution)
+            both modified:   article.txt
+    
+    no changes added to commit (use "git add" and/or "git commit -a")
+    
+    SSAFY@2□□PC179 MINGW64 ~/pjt/pjt-06/live_codes/live-codes/04-merge-conflict-practice (master|MERGING)
+    $ git add .
+    
+    SSAFY@2□□PC179 MINGW64 ~/pjt/pjt-06/live_codes/live-codes/04-merge-conflict-practice (master|MERGING)
+    $ git status
+    On branch master
+    All conflicts fixed but you are still merging.
+      (use "git commit" to conclude merge)
+    
+    Changes to be committed:
+            modified:   article.txt
+    
+    SSAFY@2□□PC179 MINGW64 ~/pjt/pjt-06/live_codes/live-codes/04-merge-conflict-practice (master|MERGING)
+    $ git commit
+    [master 78bb36a] Merge branch 'hotfix'
+    
+    SSAFY@2□□PC179 MINGW64 ~/pjt/pjt-06/live_codes/live-codes/04-merge-conflict-practice (master)
+    $ git log --oneline --all --graph
+    *   78bb36a (HEAD -> master) Merge branch 'hotfix'
+    |\
+    | * 6c21da3 (hotfix) c5
+    * | fd5079f c4
+    * | d002098 c3
+    |/
+    * b0172ca c2
+    * aeebd0d c1
+    
+    SSAFY@2□□PC179 MINGW64 ~/pjt/pjt-06/live_codes/live-codes/04-merge-conflict-practice (master)
+    $ git branch -d hotfix
+    Deleted branch hotfix (was 6c21da3).
+    ```
+    
+
+### Git workflow
+
+: 원격 저장소를 활용해 다른 사용자와 협업하는 과정 → Feature Branch Workflow
+
+→ PR(풀리퀘)를 통해 코드리뷰 진행
+
+### Git Flow
+
+: main, develop, feature, release, hotfix 라는 5가지 브랜치를 각자의 명확한 역할에 따라 운영하는 방식
+
+![image.png](attachment:2bca0f1f-a7bb-4b7f-84f6-6f8a0bd8b67a:image.png)
+
+- main : 제품 그 자체
+    
+    ![image.png](attachment:8c4fea44-ab30-42c0-a2b2-2dff6d3658da:image.png)
+    
+- develop : 다음 배포를 위한 개발 기지
+    
+    ![image.png](attachment:36cab5bf-21f4-4717-b4c5-51a52980028e:image.png)
+    
+- feature : 기능 개발 작업실
+    
+    ![image.png](attachment:f73f5778-196a-46c9-9104-413b2e04e071:image.png)
+    
+- release : 배포를 위한 최종 점검
+    
+    ![image.png](attachment:f8a61d3e-8821-475c-b0f4-333737ef2cf3:image.png)
+    
+- hotfix : 긴급, 프로덕션 버그 수정
+    
+    ![image.png](attachment:05cb6045-f726-4d2e-84e6-ddb86e27071c:image.png)
+    
+
+### Forking Workflow
+
+Fork : 다른 사용자의 원격 저장소를 자신의 계정으로 복사하는 것
+
+![image.png](attachment:63ce65a3-effa-45af-bfb8-6e7bfab4052c:image.png)
