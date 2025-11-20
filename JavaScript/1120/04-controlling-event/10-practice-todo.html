@@ -1,0 +1,46 @@
+<!-- todo.html -->
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+</head>
+
+<body>
+  <input type="text" class="input-text">
+  <button id="btn">+</button>
+  <ul></ul>
+
+  <script>
+    // 목표: Input창에 입력한 후 '+'버튼 클릭 시, 실시간으로 리스트에 출력하기
+    // 추가기능: 빈 문자열이 입력될 경우, 경고 대화상자를 띄우기 
+    // 1. 요소를 선택
+    const inputTag = document.querySelector('.input-text')
+    const btnTag = document.querySelector('#btn')
+    const ulTag = document.querySelector('ul')
+
+    const addTodo = function(event){
+      // 사용자가 입력한 데이터를 가져온다
+      const inputDate = inputTag.value
+      // 인풋 정보를 받아온 이 시점에서 빈 인풋인지 검사
+      if(inputDate.trim()){
+        // ul태그에 li태그를 추가
+        const liTag = document.createElement('li')
+        liTag.textContent = inputDate
+        
+        // ul태그의 자식으로 추가
+        ulTag.appendChild(liTag)
+        
+        inputTag.value = ''
+      }else{
+        alert('입력해')
+      }
+    }
+    btnTag.addEventListener('click', addTodo)
+  </script>
+</body>
+
+</html>
