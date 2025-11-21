@@ -1,0 +1,67 @@
+1121 관통PJT
+
+## DOM 조작과 Event 처리 활용
+
+1. 즉각적인 피드백
+    - 사용자와 상호작용
+    - 실시간 유효성 확인
+2. 효율적인 정보 관리
+    - 평소에는 숨겨뒀다가 필요할때 보여줌
+3. 시각적인 매력과 몰입감
+    - 사용자 서비스 이용 경험 개선
+
+## keyup Event
+
+> Input Event
+> 
+- 요소의 value가 변경될때
+- 붙여넣기에도 반응하는 유효성 검사 가능
+
+> Keyup Event
+> 
+- 키보드 키가 눌렸다가 떼어질 때
+- 특정 키를 눌렀을 때만 동작 수행
+
+### CSS animation
+
+JS를 사용하지 않고 복잡한 움직임을 구현
+
+시작부터 끝까지 애니메이션의 전반적인 규칙을 정의
+
+주요 속성
+
+- animation-name : 어떤 동작을 할지(@Keyframes 이름 지정)
+    
+    ![image.png](attachment:1f0ef71f-c39e-45dd-a7d8-bc601761e097:image.png)
+    
+- animation-duration : 몇초동안 할지
+- animation-function : 속도변화(느리게, 시작/끝 등)
+
+![image.png](attachment:6804e7c2-4126-4aa0-95fa-d2cbd05a623a:image.png)
+
+## Drag Event
+
+draggable = “true” (기본 값은 false)
+
+마우스로 드래그 중인 요소에서 발생
+
+- dragstart 이벤트 : 요소를 끌기 시작할때
+- drag 이벤트 : 끌고다니는 과정동안
+    
+    ![image.png](attachment:b1273b03-b611-4d04-b735-5036503bef89:image.png)
+    
+- dragend 이벤트 : 드래그 끝나는 순간
+
+## Scroll Event
+
+- window.scrollY
+ : 브라우저 창의 수직 스크롤 위치 (권장하는 표준 속성)
+- element.scrollHeight
+ : 요소에 포함된 전체 콘텐츠의 높이로 스크롤되지 않은 부분까지 포함되며 총 길이를 파악하여 스크롤 막대의 끝에 도달했는지 확인
+
+스크롤시 나타나는 요소
+
+- 투명도를 조절
+- transition 속성을 활용하여 부드럽게 나타나도록
+
+![image.png](attachment:b7e40caf-cb3f-4af1-8dd0-f30343a892be:image.png)
