@@ -1,0 +1,169 @@
+1125 JS 6 비동기 w/ Django
+
+## Ajax w/ follow
+
+> 팔로우 버튼을 눌러도 새로고침 없이 처리하자~
+> 
+
+사전 준비
+
+1. M:N 관계 모델링까지 진행된 Django 플젝 준비
+2. 가상 환경 생성, 활성화 및 패키지 설치
+
+구현과정
+
+1. 프로필 페이지에 axios CDN 작성
+    
+    ![image.png](attachment:efb4487c-5131-438e-9be5-f3a8c1ad4acc:image.png)
+    
+2. form 요소 선택을 위해 id 속성 지정 및 선택
+    
+    → action 과 method 속성은 삭제 (요청은 axios로 대체)
+    
+    ![image.png](attachment:9577ff75-cc98-4812-9f7c-e2027c391a0d:image.png)
+    
+3. form 요소에 이벤트 핸들러 할당, submit 이벤트의 기본 동작 취소
+    
+    ![image.png](attachment:93fa22a0-396d-4e47-be70-cade20ef25fe:image.png)
+    
+4. axios 요청 코드 작성
+    
+    → 사용자 pk와 csrf토큰은?
+    
+    ![image.png](attachment:06e4fd34-e6d7-468b-a776-7f325ce63027:image.png)
+    
+5. url에 작성할 user pk 가져오기 (HTML ⇒ JavaScript)
+    
+    ![image.png](attachment:ae243b48-ec76-45c6-acba-d8f5a232ae8c:image.png)
+    
+    **data-* 속성** 
+    
+    - 사용자 지정 데이터 속성을 만들어, HTML과 DOM 사이에서 임의의 데이터를 교환하는 방법
+    - 모든 사용자 지정 데이터는 JS에서 **dataset 속성을 통해 접근**
+    - 주의사항
+        - 대소문자 여부에 상관없이 ‘xml’문자로 시작 불가
+        - 대문자, 세미콜론 포함 불가
+    
+    ![image.png](attachment:60448035-f2a7-4210-8a7a-b194012f4a2f:image.png)
+    
+6. 요청 url 작성 마무리
+    
+    ![image.png](attachment:3d7a28c8-c4a2-4087-83af-9369a06c4777:image.png)
+    
+7. 문서상 input hidden 으로 존재하는 csrf token 데이터를 이제는 axios로 전송해야함
+    
+    ![image.png](attachment:34cd3acc-bc20-4acf-9352-baac84c50e2c:image.png)
+    
+    ![image.png](attachment:8f083e3b-f5d7-4dd5-bdad-2ced5697e595:image.png)
+    
+8. 팔로우 버튼을 토글하기 위해, 팔로우 상태 확인 필요
+    
+    → django views에서 팔로우 여부를 나타내는 변수를 추가하여 JSON 형식으로 응답
+    
+    → JS에게 전달할 데이터 작성 (응답은 HTML이 아닌, JsonResponse로 JSON데이터로 응답하도록 변경)
+    
+    ![image.png](attachment:6522a2a7-dd9d-45d6-a921-f53ef436e6f2:image.png)
+    
+9. 팔로우 요청 후 Django 서버로부터 받은 응답 데이터 확인하기
+    
+    ![image.png](attachment:1cbdc88e-cea2-45e4-9c11-20ba2f2cea80:image.png)
+    
+10. 응답 데이터(is_followed)에 따라 팔로우 버튼 조작
+    
+    ![image.png](attachment:d53ff039-f0c9-42ad-9163-80bba356764c:image.png)
+    
+11. 클라이언트와 서버 간 XHR객체를 주고 받는것을 확인하기 (F12-Network)
+    
+    ![image.png](attachment:caf102eb-3a9b-4ba7-a48d-095367024942:image.png)
+    
+12. ‘팔로잉수’와 ‘팔로워수’ 비동기 적용
+    
+    Django view 함수에서 팔로워, 팔로잉 인원수 연산을 진행하여 결과를 응답데이터로 전달
+    
+    ![image.png](attachment:84570c11-2e4d-4a57-8251-f6d9d0978640:image.png)
+    
+13. 해당 요소를 선택할 수 있도록 span 태그와 id 속성 작성
+    
+    각 span태그를 선택 후 응답데이터를 받아 각 태그의 인원수 값 변경에 활용
+    
+    ![image.png](attachment:ba39c0fb-469a-49e4-8f1f-72d5700e0486:image.png)
+    
+
+## Ajax w/ likes
+
+전반적인 방식은 팔로우와 동일하지만, 좋아요는 한페이지에 여러개 존재 가능
+
+→ 모든 좋아요 버튼에 각가 이벤트 리스너를 등록해야할까?
+
+⇒ 버블링 활용 ( : 한 요소의 이벤트가 발생하면, 해당 요소의 할당된 핸들러가 동작하고, 이어서 부모, 조상요소까지의 핸들러가 동작하게 됨 )
+
+차이점 기반 구현 과정
+
+1. 모든 좋아요 form요소를 포함하는 최상위 요소 작성
+    
+    ![image.png](attachment:c60c3193-33c3-4289-b016-05dd8803a9ff:image.png)
+    
+2. 최상위 요소 선택, 이벤트 핸들러 할당, 하위요소에서 발생하는 submit이벤트 감지하고 form의 기본 제출 동작 취소
+    
+    ![image.png](attachment:0529ae05-661d-4bfa-84b2-8e25a8f8999b:image.png)
+    
+3. axios 코드 작성, 각 form에 data-* 속성 부여해서 JS에서 참조할수있도록 하기
+    
+    ![image.png](attachment:242d18ba-ab67-48a9-aacf-8b770516f477:image.png)
+    
+    ![image.png](attachment:dc7ec94f-0f1b-4c2c-ab05-5180540be31e:image.png)
+    
+4. url 완성 후 요청 및 응답 확인
+    
+    ![image.png](attachment:95590170-cdd1-4955-9878-81ae01b2905f:image.png)
+    
+5. 좋아요 버튼 토글을 위해 좋아요 누름 여부 상태 확인 → JS에게 전달할 데이터 작성 및 JSON 데이터 응답
+    
+    ![image.png](attachment:e3f705d8-a02e-467d-97a0-dd2c4a5b2f24:image.png)
+    
+6. 응답데이터 is_liked를 받아 isLiked 변수에 할당하고, 그에 따라 좋아요 버튼 토글
+    
+    ![image.png](attachment:8056b7df-e33c-42d9-a178-f170398b4afd:image.png)
+    
+    ![image.png](attachment:b1c3cbc9-1d2a-434d-a850-3ff91cc39807:image.png)
+    
+7. 문자열과 [article.pk](http://article.pk) 값을 조합하여, 각 좋아요 버튼에 고유한 id속성 부여
+    
+    각 좋아요 버튼을 선택 후 isLiked에 따라 버튼을 토글
+    
+    ![image.png](attachment:056b4098-2aeb-4b7a-ab77-8df6ef78cf91:image.png)
+    
+
+### **강사’s 잔소리**
+
+<찐개발자 트랙>
+
+커밋이 지속되다면 다음엔 퀄리티 높이기
+
+↓ 
+
+기술 블로그 작성 (이론 정리부터 시작도 ㄱㅊ) → 최종적으로는 포스트모델(회고), 새로운 기술에 대한 탐구
+
+↓
+
+기초를 중요시하자 (매우 중요) ← LLM에 의존하지 않는 개발자가 될 것
+
+↓
+
+CS 역량을 다지고 잊지 않을 것. 프레임워크는 유행이다(기능 구현은 누구나 한다)
+
+↓
+
+레거시 코드 / 오픈소스코드를 읽는 방법 연습
+
+↓
+
+이제 개발은 다 잘한다. 커뮤니케이션 능력과 전공을 활용하자
+
+<개발+타전공 트랙> (추천)
+
+요즘은 여러 도메인 지식 + 개발 역량이 귀하다.
+
+↓
+
+개발 실력을 메인웨폰으로 본인의 도메인 지식도 놓치지 말자
