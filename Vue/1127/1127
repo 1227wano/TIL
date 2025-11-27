@@ -1,0 +1,366 @@
+1127 Vue 2 Basic syntax 1
+
+## Template Syntax
+
+Vue는 DOM을 컴포넌트 인스턴스의 데이터에 선언적으로 바인딩할 수 있는, HTML 기반 템플릿구문을 사용
+
+ → {{ age }} 와 같은 형식으로 선언적 바인딩함
+
+⇒ v-접두사로 표현
+
+종류
+
+1. Text Interpolation
+    
+    : 데이터 바인딩의 기본적 형태  → {{}} 로 표현 ← 내부의 작성한 속성이 변경될때마다 업뎃됨
+    
+2. Raw
+    
+    : 실제 HTML을 출력하려면 v-html을 사용해야함
+    
+    ![image.png](attachment:144389da-e465-401a-8ebf-17720874591f:image.png)
+    
+3. Attribute Bindings
+    
+    : 속성 내에서 {{}}는 사용할 수 없으니 **v-bind** 사용
+    
+    : 바인딩 값이 null이나 undefined면 렌더링 요소에서 제거됨
+    
+    ![image.png](attachment:34143521-06e2-4a2b-9550-c303d02dba74:image.png)
+    
+4. JavaScript Expressions
+    
+    : Vue는 모든 데이터 바인딩 내에서 JS 표현식의 모든 기능을 지원
+    
+    → 사용할 수 있는 위치는 
+    
+    1. 콧수염 구문 내부 
+    
+    2. 모든 디렉티브의 속성 값(v-로 시작하는 특수속성)
+    
+    ![image.png](attachment:d97a36fb-9b2d-4339-9a13-98da10e6f604:image.png)
+    
+
+Expressions 주의 사항
+
+- 각 바인딩에는 하나의 단일 표현식만 포함 가능
+- 작동하지 않는 경우
+    
+    ![image.png](attachment:6f2e7e7c-1af8-4681-9d71-7453628a5a78:image.png)
+    
+
+### Directive
+
+: v-접두사가 있는 특수 속성
+
+특징
+
+- 속성 값은 단일 JS표현식이어야 함 (v-for, v-on 제외)
+- 표현식 값이 변경될 때 DOM에 반응적으로 업뎃 적용
+
+전체 구문
+
+- Name(이름) : 어떤 종류의 기능을 수행할지
+- Argument(전달인자) : Directive가 무엇에 대해 동작할지 알려주는 구체적인 대상
+    
+    ![image.png](attachment:c13300bf-f1b0-47d1-ac04-1cdd271a50f9:image.png)
+    
+- Modifiers(수식어) : 점으로 표시되는 특별한 접미사로, Directive의 기본 동작을 수정 가능
+    
+    ![image.png](attachment:2c8a1f0b-7440-415f-9347-7c74b6abf076:image.png)
+    
+- Value(값) : Directive에 연결될 JS 표현식
+
+![image.png](attachment:9d8a3f33-fa5d-4459-adf5-72f6deddc6f0:image.png)
+
+- Built-in Directive
+    
+    ![image.png](attachment:923615f2-d0ca-44f2-ae8b-6f617737a281:image.png)
+    
+
+## Dynamically data binding
+
+### v-vind
+
+: 하나 이상의 속성 또는 컴포넌트 데이터를 표현식에 동적으로 바인딩
+
+### Attribute Bindings
+
+- HTML의 속성값을 Vue의 상태 속성 값과 동기화
+
+![image.png](attachment:14b07359-a73e-49d5-aabd-b1c403ae2a3b:image.png)
+
+- v-bind shorthand (약어)
+    - ‘:’
+        
+        ![image.png](attachment:5132b285-0e2c-43da-807e-e8bec0756c96:image.png)
+        
+- Dynamic attribute name
+    - 대괄호로 감싸서 directive augument에 JS표현식 사용가능
+        
+        → [] 안에 작성하는 이름은 반드시 소문자로만
+        
+        ![image.png](attachment:33738256-79cb-4c52-987c-ef9e04b35dbe:image.png)
+        
+
+### Class and Style Bindings
+
+class와 style도 v-bind로 동적으로 문자열 값 할당 가능
+
+→ Vue는 객체 또는 배열을 활용하여 작성할 수 있도록 함 (단순 문자열은 오류 발생 가능)
+
+- Binding HTML Classes
+    - Binding to Objects
+        
+        ![image.png](attachment:9ea956b1-abe6-4aac-bde1-7bfec5335a20:image.png)
+        
+        ![image.png](attachment:9f535eae-eb99-4e3b-9899-c78c86745857:image.png)
+        
+        ![image.png](attachment:bbbe8cd4-d2b1-4ed9-a1c4-d22e162c7b19:image.png)
+        
+    - Binding to Arrays
+        
+        ![image.png](attachment:f68982ad-f680-4c33-90f9-fc105747bd69:image.png)
+        
+        ![image.png](attachment:3ac38298-5b46-4a37-9b60-abb8a3e45e8a:image.png)
+        
+- Binding HTML Styles
+    - Binding to Objects
+        
+        ![image.png](attachment:ecd033ff-fa59-4401-85ed-4c3004cd97ca:image.png)
+        
+        ![image.png](attachment:002a1dce-e63f-47dc-902c-d92ce4c33901:image.png)
+        
+        ![image.png](attachment:7caaedfd-5779-40dd-a043-f97a039b89eb:image.png)
+        
+    - Binding to Arrays
+        
+        ![image.png](attachment:66fcc860-9ea6-403d-9a1e-7fc168094c64:image.png)
+        
+
+## Event Handling
+
+### v-on
+
+- DOM 요소에 이벤트 리스너를 연결 및 수신
+    
+    `v-on:event="handler"`
+    
+- v-on shorthand(약어) → @사용
+    
+    `@event=”handler”`
+    
+- handler 종류
+    - Inline handlers : 이벤트가 트리거 될때 실행될 JS코드
+        
+        ![image.png](attachment:8737d0ab-6bfa-45dc-add8-310a37679418:image.png)
+        
+    - Method handlers : 컴포넌트에 정의된 메서드 이름
+        
+        ![image.png](attachment:a4abde12-b002-4bbf-b685-9fde4af15750:image.png)
+        
+        ![image.png](attachment:ef1b470d-8536-4e40-9368-8eb13e3874a5:image.png)
+        
+
+### Modifiers
+
+Vue는 Event Modifiers를 제공하여, event.Default()와 같은 코드를 메서드 안에 직접 작성할 필요가 없도록 합니다.
+
+→ 대신, stop, prevent, self 등 다양한 modifiers를 제공 ← 메서드 로직을 데이터 관련 처리에만 집중시키기
+
+> Modifiers는 체인으로 작성할 수 있으며, 이때는 작성된 순서로 실행되기 때문에 작성 순서 유의
+> 
+1. form 요소에서 submit이벤트가 발생하면, submit 이벤트의 기본 동작을 취소하고 onSubmit 호출
+    
+    ![image.png](attachment:6cac687c-2ca9-435c-97a6-6864976657ff:image.png)
+    
+2. a태그 클릭 예시
+    
+    ![image.png](attachment:7ce80c55-7e33-46ff-b931-7808730573a0:image.png)
+    
+    ![image.png](attachment:d67a4983-be36-4cbb-979e-1dac29e31208:image.png)
+    
+    ![image.png](attachment:6d66256e-4863-4488-ab1e-341aaf89d7d5:image.png)
+    
+    ![image.png](attachment:c05f1339-aa3e-442b-a5d9-9cd3777e6b26:image.png)
+    
+
+## Form Input Bindings
+
+> form을 처리할때 사용자가 input에 입력하는값을 실시간으로 JS상태에 동기화해야하는 경우
+(양방향바인딩)
+> 
+
+방법
+
+1. v-bind와 v-on을 함께 사용
+2. v-model 사용
+
+### v-bind with v-on
+
+1. v-bind로 input 요소의 value 속성을 반응형 변수에 연결
+2. v-on으로 input이벤트가 발생할때마다, input의 현재 값을 반응형 변수에 저장
+
+### v-model
+
+: form input 요소 또는 컴포넌트에서 양방향 바인딩을 만듦 (→ 양방향에서만 사용 가능)
+
+![image.png](attachment:67139f72-9b5b-41e6-9a76-ffe873324500:image.png)
+
+### v-model 활용
+
+- Checkbox 활용
+    1. 단일 체크박스와 boolean 값 활용
+        
+        ![image.png](attachment:58f11f64-462c-4f34-827b-9180ed462b62:image.png)
+        
+    2. 여러 체크박스와 배열 활용
+        
+        ![image.png](attachment:ac54878f-9cc8-40a8-9d60-03faf4ec577c:image.png)
+        
+- Select 활용
+    
+    : Select에서 v-model 표현식의 값이
+    
+    ![image.png](attachment:0502dcb9-bc6e-4040-91f9-8514cda179b7:image.png)
+    
+
+## 참고
+
+접두어 $
+
+: $접두어가 붙은 변수는 Vue인스턴스 내에서 사용할 수 있도록 Vue가 제공하는 공용 프로퍼티
+
+: 사용자가 지정한 반응형 변수나 메서드와 구분하기 위함
+
+→ 주로 Vue 인스턴스 내부 상태를 다룰 때 사용
+
+IME (Input Method Editor)
+
+![image.png](attachment:8917c3f5-ee7e-415d-8064-0d6abc9e1c14:image.png)
+
+
+### Gemini 정리!
+    
+    https://gemini.google.com/u/1/app/f96dd760edbfea35?hl=ko&pageId=none
+    
+    ### 1. 텍스트와 HTML 출력 (Text Interpolation & Raw HTML)
+    
+    가장 기본적인 데이터 바인딩 방식입니다.
+    
+    - **텍스트 출력 (`{{ }}`):**
+        - 일명 **"콧수염 구문(Mustache Syntax)"**이라고 부릅니다.
+        - 데이터가 바뀌면 화면도 자동으로 바뀝니다.
+        - **예시:** `<span>메세지: {{ msg }}</span>`
+    - **실제 HTML 출력 (`v-html`):**
+        - `{{ }}`는 데이터를 무조건 일반 텍스트로 인식합니다. 태그(`<b>` 등)를 적용하려면 `v-html`을 써야 합니다.
+        - **주의:** 보안상 위험할 수 있으니 꼭 필요할 때만 사용하세요.
+    
+    ### 2. 속성 바인딩 (Attribute Bindings)
+    
+    HTML 태그의 **속성(id, class, disabled 등)**에는 콧수염 구문`{{ }}`을 쓸 수 없습니다. 이때 **`v-bind`**를 사용합니다.
+    
+    - **기본 문법:** `v-bind:속성명="변수명"`
+    - **약어(Shorthand):** `v-bind`를 생략하고 **콜론(`:`)**만 씁니다. (가장 많이 씁니다!)
+        - `v-bind:id` → `:id`
+    - **특징:** 값이 `null`이나 `undefined`이면 해당 속성은 렌더링되지 않고 제거됩니다.
+    
+    HTML
+    
+    `<div v-bind:id="dynamicId">...</div>
+    <div :disabled="isButtonDisabled">버튼</div>`
+    
+    ### 3. JavaScript 표현식 (Expressions)
+    
+    Vue는 바인딩 내부에서 단순히 변수명뿐만 아니라 **자바스크립트 연산**도 지원합니다.
+    
+    - **사용 가능 위치:** `{{ }}` 내부 또는 `v-`로 시작하는 속성 값 내부.
+    - **규칙:** 반드시 **값 하나로 귀결되는 '단일 표현식'**이어야 합니다.
+        - ⭕ 가능: `{{ number + 1 }}`, `{{ ok ? 'YES' : 'NO' }}`, `{{ message.split('').reverse().join('') }}`
+        - ❌ 불가능: `{{ var a = 1 }}` (선언문), `{{ if (ok) { return message } }}` (조건문 흐름 제어)
+    
+    ---
+    
+    ### 4. 디렉티브 (Directives)
+    
+    `v-` 접두사가 붙은 특수 속성들을 말합니다. 이 구조를 이해하는 것이 중요합니다.
+    
+    - **역할:** 표현식의 값이 변경될 때 DOM에 반응적으로 업데이트를 적용합니다.
+    - **구조 분해:** `v-on:submit.prevent="onSubmit"`
+        1. **Name (이름):** `v-on` (이벤트 감지 기능)
+        2. **Argument (전달인자):** `:submit` (어떤 이벤트인지 구체적 지정, 콜론 뒤에 옴)
+        3. **Modifiers (수식어):** `.prevent` (기본 동작인 새로고침 막기, 점 뒤에 옴)
+        4. **Value (값):** `"onSubmit"` (실행할 함수)
+    
+    > 동적 인자 (Dynamic Arguments):
+    > 
+    > 
+    > 대괄호 []를 써서 속성 이름을 변수로 쓸 수 있습니다.
+    > 
+    > 예: <a v-bind:[attributeName]="url"> ... </a>
+    > 
+    > 주의: 대괄호 안의 변수명은 소문자여야 안전합니다.
+    > 
+    
+    ---
+    
+    ### 5. 클래스와 스타일 바인딩 (Class & Style)
+    
+    HTML의 `class`나 `style`을 동적으로 바꿀 때, 문자열을 직접 조작하면 복잡하고 에러가 나기 쉽습니다. Vue는 **객체(Object)**나 **배열(Array)**을 지원합니다.
+    
+    - **객체 문법 (가장 흔함):** 참(true)인 속성만 클래스로 적용됩니다.
+        - `<div :class="{ active: isActive, 'text-danger': hasError }"></div>`
+        - `isActive`가 `true`면 `class="active"`가 됩니다.
+    - **배열 문법:** 여러 클래스를 나열할 때 사용합니다.
+        - `<div :class="[activeClass, errorClass]"></div>`
+    
+    ---
+    
+    ### 6. 이벤트 핸들링 (Event Handling)
+    
+    사용자의 행동(클릭, 키보드 입력 등)을 감지합니다.
+    
+    - **디렉티브:** `v-on`
+    - **약어(Shorthand):** **골뱅이(`@`)** (예: `v-on:click` → `@click`)
+    - **핸들러 종류:**
+        1. **인라인 핸들러:** 간단한 로직 바로 작성 (`@click="count++"`)
+        2. **메서드 핸들러:** 함수 이름 연결 (`@click="greet"`)
+    - **수식어 (Modifiers):** 자바스크립트에서 `event.preventDefault()` 등을 일일이 치지 않게 도와줍니다.
+        - `.stop` (이벤트 전파 중단), `.prevent` (기본 동작 중단) 등
+        - **체이닝:** `@click.stop.prevent` 처럼 연달아 쓸 수 있습니다. (순서대로 실행됨!)
+    
+    ---
+    
+    ### 7. 폼 입력 바인딩 (Form Input Bindings)
+    
+    사용자가 입력한 값(View)과 자바스크립트 데이터(Model)를 실시간으로 동기화하는 **양방향 바인딩**입니다.
+    
+    - **핵심 디렉티브:** **`v-model`**
+    - **작동 원리:** `v-model`은 사실 아래 두 가지를 합친 "마법의 문법(Syntactic Sugar)"입니다.
+        1. `:value` (데이터를 화면에 보여줌)
+        2. `@input` (화면의 변경사항을 데이터에 반영함)
+    - **활용:** input(text), checkbox, radio, select 등 다양한 폼 요소에서 자동으로 타입을 맞춰 처리해 줍니다.
+    
+    > 참고: IME (입력기) 이슈
+    > 
+    > 
+    > 한글, 중국어, 일본어 같은 문자는 조합형이라 글자가 완성될 때까지 v-model이 즉시 반응하지 않을 수 있습니다. 실시간 반응이 중요하다면 v-model 대신 :value와 @input을 직접 조합해서 써야 합니다.
+    > 
+    
+    ---
+    
+    ### 8. 참고: `$` 접두어
+    
+    - Vue 인스턴스 내부에는 `data`, `methods` 외에도 Vue가 자체적으로 제공하는 속성들이 있습니다.
+    - 이들과 사용자가 만든 변수를 구분하기 위해 Vue 내장 속성은 **`$`(달러 기호)**로 시작합니다. (예: `$el`, `$emit` 등)
+    
+    ---
+    
+    ### 요약 정리
+    
+    | **기능** | **디렉티브 (전체)** | **약어 (Shorthand)** | **용도** |
+    | --- | --- | --- | --- |
+    | **속성 바인딩** | `v-bind:href` | **`:href`** | HTML 속성(id, class 등)에 데이터 연결 |
+    | **이벤트 핸들링** | `v-on:click` | **`@click`** | 클릭 등 사용자 동작 감지 |
+    | **양방향 바인딩** | `v-model` | (없음) | 폼 입력값과 데이터 동기화 |
+    | **HTML 출력** | `v-html` | (없음) | 태그를 포함한 텍스트 출력 |
