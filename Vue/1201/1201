@@ -1,0 +1,292 @@
+1201 Vue 2 Basic syntax2
+
+## Computed property
+
+### Computed
+
+: ‘계산된 속성’을 정의하는 함수
+
+→ 미리 계산된 속성을 만들어 템플릿의 표현식을 단순하게 하고, 불필요한 반복 연산을 줄인다
+
+한번 계산된 값은 캐싱(임시저장)되어, 의존하는 데이터가 바뀌기 전까지는 다시 계산 안하므로 성능에 유리
+
+예시)
+
+![image.png](attachment:200d4f2c-5837-41ef-8fd9-bc9334f045cf:image.png)
+
+특징
+
+- 반환되는 값은 계산된 ref(computed ref)이며, 일반 ref와 유사하게 계산된 결과를 .value로 참조 가능
+- computed 속성은 의존된 반응형 데이터를 자동으로 추적
+- 의존하는 반응형 데이터가 변경될 때만 재평가
+(위 예시의 경우, todos에 의존하고 있기 때문에 todos가 변경될 때만 restOfTodos가 업뎃됨)
+
+### Computed vs Methods
+
+> computed 속성 대신 method로도 동일한 기능을 정의할 수 있음
+> 
+
+computed 속성은 의존하는 반응형 데이터를 기반으로 그 결과를 **캐시하므로**, 그 데이터가 변경되지 않는 한 해당 computed 속성에 여러 번 접근해도 **함수를 다시 실행하지 않고** 캐시된 결과를 즉시 반환
+
+method는 다시 렌더링이 발생할 때 마다 항상 함수를 실행
+
+캐시(Cache) : 데이터나 결과를 임시적으로 저장해두는 저장소
+
+![image.png](attachment:a0d20d2e-970f-49cc-913c-3e85b81d653e:image.png)
+
+![image.png](attachment:9cb215c2-8c5a-49ae-9e70-3387ca9e4274:image.png)
+
+### 주의사항
+
+1. computed의 반환 값은 변경하지 말것
+    
+    ![image.png](attachment:e4c348d8-6d8e-43a8-b38d-da2b384f2b57:image.png)
+    
+2. computed 사용 시 원본 배열 변경하지 말것
+    
+    : computed에서 reverse()나 sort()처럼(JavaScript 배열(Array)의 순서를 바꿀 때 사용) 원본 배열을 변경하는 메서드를 사용할 때는, 반드시 원본 배열의 복사본을 만들어 처리해야 함!
+    
+    ![image.png](attachment:2ccedd3e-f70c-434e-85d5-18ef397fc0b4:7f7150e5-8789-421b-a4d6-42f46a9fd4f1.png)
+    
+
+## Conditional Rendering
+
+### v-if
+
+: 표현식 값의 true/false를 기반으로 요소를 조건부로 렌더링
+
+![image.png](attachment:01e273f9-d02c-434f-bcf2-d49f54105627:image.png)
+
+template 요소에 사용하면, 여러 요소를 하나의 조건부 블록으로 묶기 가능
+
+![image.png](attachment:dc236f91-eede-4f19-a66c-d3d0044ac3a0:image.png)
+
+### v-if vs v-show
+
+v-show
+
+: 표현식 값의 true/false를 기반으로 요소의 가시성을 전환
+
+→ v-if와 달리 CSS의 display를 none으로 바꿔 화면에서 숨기는 것 뿐
+
+v-show를 사용한 요소는 조건과 관계없이 항상 DOM에 렌더링 됨
+
+![image.png](attachment:a20f348b-cc9e-4066-84f9-80d64c6ff6f9:image.png)
+
+![image.png](attachment:0fa6919f-50d3-4c02-b8ef-c8a4f327d791:5a1b1f5e-25cd-4e7f-884d-7bf67f1d4f5c.png)
+
+→ 컨텐츠를 매우 자주 전환해야하는 경우는 v-show를, 실행 중 조건이 변경되지 않는 경우에는 v-if 권장!
+
+## List Rendering
+
+### v-for
+
+구조 : alias in expression 형식의 특별한 구문 사용
+
+객체를 반복하는 예시
+
+HTML 템플릿 요소에 v-for를 사용하여 하나 이상의 요소에 대해 반복 렌더링 가능
+
+![image.png](attachment:45aac0c6-9ee3-4391-b7cd-f329c8ed2dda:image.png)
+
+### v-for w/ key
+
+v-for 구문은 각 요소를 key를 활용하여 고유한 값으로 식별할 수 있음
+
+key는 각 항목을 고유하게 식별하는 문자열이나 숫자여야 함
+
+내장 특수 속성 key의 특징
+
+![image.png](attachment:b61c4c55-1c10-4778-8daa-884f6c80a733:image.png)
+
+v-for와 key를 함께 쓰는거 잊지 말기~
+
+올바른 key 선택 기준
+
+- 권장되는 key값
+    - DB의 고유 ID
+    - 항목 고유 식별자
+- 피해야 할 key 값
+    - 배열 인덱스
+    - 객체 자체
+
+문제 상황
+
+: 조건을 만족하는 항목(v-if)만 반복해서(v-for) 출력하기
+
+![image.png](attachment:1fccd3b6-dfba-40b1-8e7d-f260bd1e88a7:image.png)
+
+![image.png](attachment:62efe35a-fd1f-4a8e-a528-f1081f20fa58:6609a85f-6089-40fc-86eb-34a26ad229a6.png)
+
+→ but, v-if가 더 높은 우선순위를 가지므로 v-for 범위의 데이터를 사용불가. (조건 필터링후 전체 범위 반복안되듯이) [Uncaught TypeError]
+
+⇒ 동일 요소에 v-for와 v-if를 함께 사용하면 안됨
+
+**v-for와 v-if 해결법 2가지**
+
+1. computed 를 활용해 이미 필터링 된 목록을 반환하여 반복하도록 설정!
+    
+    ![image.png](attachment:6df4a070-6f38-40c0-b133-2e15bb4cde2e:c5f3d1d2-be1c-46d0-91a6-246b723debd9.png)
+    
+2. v-for와 <template> 요소를 활용하여 v-if 위치를 이동
+    
+    ![image.png](attachment:75daa4e1-09bc-45ea-a4b9-a02cae21da17:692e9c9e-fe6f-4840-80ad-632c04a6307f.png)
+    
+
+- directive 인 v-if, v-for 와 template language 인 {% if %}, {% for … of …%} 의 차이는 무엇일까?
+    
+    ### 1. 핵심 차이점 요약
+    
+    | **특징** | **Vue.js 디렉티브 (v-if, v-for)** | **템플릿 언어 ({% if %}, {% for %})** |
+    | --- | --- | --- |
+    | **실행 장소** | **브라우저 (Client-side)** | **서버 (Server-side)** |
+    | **실행 시점** | HTML이 로드된 후 **런타임(Runtime)** | HTML을 브라우저로 보내기 전 **렌더링 타임** |
+    | **데이터 소스** | JavaScript 메모리 (Vue 인스턴스) | 백엔드 데이터베이스 또는 서버 변수 |
+    | **반응성 (Reactivity)** | **있음** (데이터 변경 시 화면 즉시 갱신) | **없음** (새로고침해야 변경 사항 반영) |
+    | **결과물** | 동적으로 변화하는 DOM 요소 | 완성된 정적 HTML 문자열 |
+    
+    ---
+    
+    ### 2. 상세 비교
+    
+    ### A. Vue.js 디렉티브 (`v-if`, `v-for`)
+    
+    - **작동 원리:** 브라우저가 HTML을 다 다운로드하고, Vue.js 라이브러리가 로드된 **후**에 작동합니다.
+    - **동적 상호작용:** 사용자가 버튼을 클릭해서 데이터를 바꾸면, `v-if`는 즉시 요소를 삭제하거나 생성하고, `v-for`는 리스트를 재정렬합니다. 페이지 새로고침이 필요 없습니다.
+    - **예시**
+        
+        ```html
+        <div v-if="isVisible">보이세요?</div>
+        <button @click="isVisible = !isVisible">토글</button>
+        ```
+        
+    
+    ### B. 템플릿 언어 (`{% if %}`, `{% for %}`)
+    
+    - **작동 원리:** 서버(Python, Ruby, Node.js 등)에서 HTML 파일을 **생성할 때** 작동합니다. 조건에 맞지 않는 부분은 아예 HTML 코드에서 제거된 상태로 브라우저에 도착합니다.
+    - **정적 결과:** 브라우저는 이미 완성된 HTML을 받습니다. 따라서 사용자가 나중에 어떤 행동을 해도, 서버에 다시 요청(새로고침)하지 않는 한 내용은 바뀌지 않습니다.
+    - **예시**
+        
+        ```html
+        {% if user.is_logged_in %}
+            <div>환영합니다, 회원님!</div>
+        {% endif %}
+        ```
+        
+    
+    ---
+    
+    ### 3. 함께 사용할 때의 실행 순서 (매우 중요)
+    
+    만약 한 파일(HTML/Template) 안에서 이 둘을 섞어 쓴다면 실행 순서를 이해하는 것이 중요합니다.
+    
+    1. **1단계 (서버):** 템플릿 언어(`{% ... %}`)가 먼저 해석됩니다. 서버는 로직을 수행하고 결과 HTML을 만듭니다.
+    2. **2단계 (네트워크):** 만들어진 HTML이 브라우저로 전송됩니다. 이때 `v-if`, `v-for`는 아직 그냥 텍스트(속성)일 뿐입니다.
+    3. **3단계 (브라우저):** 브라우저가 HTML을 읽고 Vue.js를 실행합니다. 이때 `v-if`, `v-for`가 해석되고 화면이 동적으로 제어됩니다.
+    
+    > 주의: Vue의 v-for 변수(item)를 템플릿 언어의 {% if item %} 안에서 사용할 수 없습니다. 템플릿 언어가 실행되는 시점에는 Vue의 변수가 존재하지 않기 때문입니다.
+    > 
+    
+    ### 4. 언제 무엇을 써야 할까?
+    
+    - **템플릿 언어 사용:**
+        - 초기 로딩 시 보안이 필요한 데이터(예: 관리자 권한 버튼을 아예 HTML에 포함시키지 않을 때).
+        - SEO(검색 엔진 최적화)가 중요해서 완성된 HTML을 검색 봇에게 보여줘야 할 때.
+        - 페이지 내용이 거의 변하지 않는 정적 페이지일 때.
+    - **Vue.js 디렉티브 사용:**
+        - 사용자 인터랙션에 따라 화면이 즉시 바뀌어야 할 때 (SPA, 모달 창, 탭 전환).
+        - 서버 부하를 줄이고 클라이언트(브라우저)에서 렌더링을 처리하고 싶을 때.
+        - API를 통해 데이터를 실시간으로 가져와 보여줄 때.
+    
+    ---
+    
+    요약하자면, 템플릿 언어는 "인쇄소에서 책을 찍어내는 것(수정 불가)"이고, Vue.js는 "태블릿 화면에 내용을 띄우는 것(실시간 수정 가능)"이라고 생각하시면 이해가 쉽습니다.
+    
+
+### Watchers
+
+watch()
+
+: 하나 이상의 반응형 데이터를 감시하고, 감시하는 데이터가 변경되면 콜백 함수를 호출
+
+구조
+
+1. 첫번째 인자 (source)
+    
+    : watch가 감시하는 대상 (반응형 변수, 값을 반환하는 함수 등)
+    
+2. 두번째 인자(callback function)
+    
+    : source가 변경될 때 호출되는 콜백 함수
+    
+    1. newValue : 감시하는 대상이 변화된 값
+    2. oldValue (optional) : 감시하는 대상의 기존 값
+
+기본 동작
+
+- count 반응형 데이터가 변경될 때 마다 그 변화를 감지하여 특정 작업을 수행
+- 버튼을 누를때마다 count값이 바뀌고, watch는 그 변화를 감시하고 있다가 즉시 콜백함수를 실행
+
+![image.png](attachment:f26e2389-685e-401c-b8bb-3e6c8ce74de6:image.png)
+
+- 배열을 활용하여 여러 대상 감시 가능
+    
+    ![image.png](attachment:ae72ce44-09ba-499b-8f97-1c331e227813:image.png)
+    
+
+computed와 watch 모두 의존(감시)하는 원본 데이터를 직접 변경하지 않음
+
+![image.png](attachment:8e7b3e0f-be96-4d5c-b8a4-5e5771e6def3:504b1efe-6242-43d0-a19d-cbd1d60b032e.png)
+
+### Lifecycle Hooks
+
+: Vue컴포넌트가 생성되고, DOM에 마운트되고, 업뎃되고, 소멸되는 각 생애주기 단계에서 실행되도록 제공되는 함수
+
+Lifecycle Hooks Diagram
+
+: 컴포넌트의 생애주기 중간중간에 함수를 제공
+
+(개발자는 컴포넌트의 특정 시점에 원하는 로직을 실행 가능)
+
+![image.png](attachment:66a5f087-6cc9-49eb-b1d3-952b38b07902:image.png)
+
+초기 렌더링 : HTML과 연결되는 시점. 그 전까지가 세팅 단계.
+
+mounted 이나 updated 시점에 할일 지정 가능
+
+```html
+// 예시
+// 컴포넌트가 마운트된 후에 실행되는 훅
+// HTML요소와 연결된 직후 콜백함수 자동 실행
+onMounted(() => {
+  console.log('mounted')
+})
+
+// 컴포넌트가 업데이트된 후에 실행되는 훅
+// HTML요소가 변경되면 콜백함수 자동 실행
+onUpdated(() => {
+  message.value = 'updated!'
+})
+```
+
+주요 Lifhcycle Hooks
+
+생성 단계 / 마운트 단계 / 업뎃 단계 / 소멸 단계 등 다양한 단계 존재
+
+가장 일반적으로 사용되는 건 onMounted, onUpdated, onUnmounted
+
+![image.png](attachment:e9c7273a-64c4-42a0-94bc-e7e79b51aff0:image.png)
+
+![image.png](attachment:1da318c6-a83a-46b4-8771-44113d40c8a9:image.png)
+
+주의사항 : Lifecycle Hooks는 반드시 동기적으로 작성해야 함
+
+![image.png](attachment:d0e29a76-4f9e-46d1-9ecf-12cf4e3cd6ae:image.png)
+
+![image.png](attachment:e7558da8-a6e7-4c28-8a42-42726ec67598:image.png)
+
+### Vue style Guide
+
+: 우선순위에 따라 4가지 범주로 나뉨
+
+![image.png](attachment:774762cd-9be4-404d-88ce-ace926d7b6f2:image.png)
