@@ -1,0 +1,145 @@
+1203 Vue 4 Component State Flow
+
+## Passing Props
+
+### Props
+
+: 부모 컴포넌트로부터 자식 컴포넌트로 데이터를 전달하는데 사용되는 사용자 지정 특성
+
+> 동일한 데이터, 하지만 다른 컴포넌트 → 공통된 부모 컴포넌트에서 관리하자
+> 
+
+부모가 자식에게 데이터를 전달 → **Pass Props**
+
+자식은 자신에게 일어난 일을 부모에게 알림 (Emit Event)
+
+(손자에게 전달하려면 자식 → 자식으로)
+
+Props 특징
+
+- 부모 → 자식 반대는 불가
+- 부모가 업뎃되면 자식의 모든 props가 최신으로 업뎃
+- One-Way Data Flow : 하향식 단방향 바인딩을 형성
+- 데이터 흐름의 일관성 및 예측 가능성을 높이는 것이 목표
+
+### Props 선언
+
+부모 컴포에서 자식 컴포에 보낼 props 작성
+
+`props_name=”message”`
+
+자식은 내려받은 props를 사용하기 위해, 
+
+**defineProps() 으로 props 선언** 필요
+
+방식
+
+1. 문자열 요소로 props 선언
+    
+    ![image.png](attachment:84b9a658-ec9c-4fa1-b5fc-a0c9b676dbea:image.png)
+    
+2. 객체를 사용한 선언
+    
+    ![image.png](attachment:88350f81-ba21-42be-a5b0-019833b5e516:image.png)
+    
+
+손자에게 내려보내기
+
+부모에게 받은 props를 v-bind를 사용하여 동적 전달
+
+![image.png](attachment:6364819c-adf4-4e64-b320-aed66559197d:image.png)
+
+### Props 세부사항
+
+1. Props Name Casing
+    
+    ![image.png](attachment:de2bbf8d-24eb-4adf-aafb-ff3ded1caa96:image.png)
+    
+2. Static props & Dynamic props
+    
+    ![image.png](attachment:be6ec465-4eb1-47c2-a21e-9b8a6cb9f568:image.png)
+    
+
+### Props 활용
+
+v-for로 요소를 반복해서 props로 전달
+
+1. ParentItem 컴포넌트 생성 및 parent의 하위 컴포로 등록
+2. 데이터 정의 및 v-for 디렉티브의 반복 요소로 활용
+3. 각 반복 요소를 props로 내려보내기
+
+## Component Events
+
+### Emit ( $emit() )
+
+: 자식 컴포가 이벤트를 발생시켜 부모 컴포로 데이터를 전달하는 메서드
+
+> 동일한 데이터, 하지만 다른 컴포넌트
+> 
+
+emit 메서드
+
+`$emit (event, …args)`
+
+: event - 커스텀 이벤트 이름, args - 추가 인자
+
+### 이벤트 발신 및 수신
+
+1. $emit을 사용하여 템플릿 표현식에서 직접 사용자 정의 이벤트를 발신
+    
+    ![image.png](attachment:704f11df-5a8b-4383-b7d4-eb11e4b5933f:image.png)
+    
+2. 부모 컴포에서는 v-on (또는 @)을 사용하여 이벤트 수신 가능
+    
+    ![image.png](attachment:2aec2cb3-6c0b-4ad2-804a-f39effbef9d3:image.png)
+    
+
+### emit 이벤트 선언
+
+- defineEmits() 을 사용하여 발신할 이벤트를 선언
+- props와 동일하게 인자의 데이터 타입에 따라 선언 방식이 나뉨 (배열 or 객체 ← 추천)
+- defineEmits()는 emit 함수를 반환
+
+### 이벤트 전달
+
+이벤트 인자 (Event Argument) 전달 활용
+
+![image.png](attachment:ab033743-ae7e-4e9b-b21c-be40b4ac4659:image.png)
+
+### 이벤트 세부사항
+
+선언 및 발신 시 → Camelcase
+
+부모 컴포넌트 수신 시 → kebab-case
+
+### emit 이벤트 활용
+
+목표 : 최하단 컴포에서 최상단 컴포의 name 변수 변경 요청하기
+
+1. 손자에서 이름변경을 요청하는 이벤트 발신
+    
+    ![image.png](attachment:909c3d96-0c85-4baa-bf09-ba39d0e9c402:image.png)
+    
+2. 자식에서 이벤트 수신 후 이름변경을 요청하는 이벤트 발신
+    
+    ![image.png](attachment:44f3f6a1-1663-4aee-b1a2-1c346ba8b701:image.png)
+    
+3. 부모에서 이벤스 수신 후 이름변수변경 메서드 호출
+(해당 변수를 props로 받는 모든 곳에서 자동 업뎃)
+    
+    ![image.png](attachment:3480ba35-57a0-48fd-ad52-6334c7ef0d79:image.png)
+    
+
+## 참고
+
+정적 &  동적 props 주의사항
+
+![image.png](attachment:0b4e596f-7eef-4fb8-93a3-a115c94db2e3:image.png)
+
+따옴표 안에 있는 게 "그냥 글자"가 아니라 "데이터(숫자, 변수, 논리값 등)"라면 무조건 `:`을 붙여야 한다고 기억
+
+### Props & Emit 객체 선언 문법을 권장하는 이유
+
+![image.png](attachment:8279a786-5bc1-4874-91ab-ef6f809b4acc:image.png)
+
+![image.png](attachment:cd2713a5-5a87-4392-a72f-ec7f5c979979:image.png)
