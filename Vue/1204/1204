@@ -1,0 +1,249 @@
+1204 Vue 5 Router
+
+## Routing
+
+: 네트워크에서 경로를 선택하는 프로세스
+
+Server Side Rendering에서는 routing을 서버 측에서 수행하고, 링크를 클릭하면 브라우저는 서버로부터 HTML 응답을 수신하고 항상 전체 페이지를 다시 로드
+
+Client Side Rendering에서는 routing을 브라우저측에서 수행하며, JS가 새 데이터(Json 형식)를 동적으로 가져와 전체 페이지 다시 로드 안함(화면 일부만 렌더링)
+
+SPA에서 Routing이 없다면
+
+- 유저가 URL을 통한 페이지 변화를 감지 못함
+- 페이지가 무엇을 렌더링 중인지에 대한 상태를 알수없음
+- 브라우저의 뒤로가기 기능을 사용 불가
+
+→ 페이지는 1개이지만, 주소에 따라 여러 컴포넌트를 새로 렌더링하여 마치 여러 페이지를 사용하는 것처럼 보이도록 해야함
+
+## Vue Router
+
+: Vue로 만든 SPA에서 페이지 이동 기능을 구현할 때 사용됨
+
+프로젝트 만들때 router 선택하면 아래처럼 서버 실행됨
+
+![image.png](attachment:a23ce6c7-b8f8-44e2-bf9b-7e6c395b3786:image.png)
+
+1. App.vue : RouterLink
+    
+    페이지를 다시 로드하지 않고 URL을 변경하여 URL 생성 및 관련 로직을 처리 (HTML의 a태그를 렌더링)
+    
+    ![image.png](attachment:a039b1c5-1117-4bf2-a625-19ae8658e835:image.png)
+    
+2. App.vue : RouterView
+    
+    RouterLink URL에 해당하는 컴포를 표시
+    
+    원하는 곳에 배치하여 컴포를 레이아웃에 표시 가능
+    
+    ![image.png](attachment:a6edee21-d47d-49b2-82ff-4c8e2f748368:image.png)
+    
+3. router/index.js (Django의 [urls.py](http://urls.py) 같은거)
+    - 라우팅에 관련된 정보 및 설정이 작성되는 곳
+    - 웹 사이트 여러 페이지들의 주소 목록을 작성
+    - 각 주소로 접속했을 때 어떤 Vue컴포를 보여줄지 연결
+4. views
+    - RouterView 위치에 렌더링 할 컴포를 배치
+    - 기존 components 폴더와 기능적으로 다른 것은 없으며 단순 분류의 의미로 구성
+    - views는 화면을 구성하는 큰 단위(페이지), components는 그 안의 세부 부분
+
+### Basic Routing
+
+라우팅 기본 동작 순서
+
+1. index.js에 라우터 관련 설정 작성(주소, 이름, 컴포)
+    
+    ![image.png](attachment:093124ec-7854-4103-8e63-d23ecdabb2b6:image.png)
+    
+2. RouterLink에 index에 정의한 주소 값 설정
+    
+    RouterLInk의 ‘to’ 속성으로 index.js에서 정의한 주소값(path)을 사용
+    
+    ![image.png](attachment:06cdb71b-f4a7-46cc-b1da-664f52e1d20b:image.png)
+    
+3. RouterLink 클릭 시 경로와 일치하는 컴포가 RouterView에서 렌더링
+    
+    RouterLink 클릭시 경로와 일치하는 컴포가 RouterView에서 렌더링 됨
+    
+    ![image.png](attachment:f1034bdc-401f-492e-b475-598768f4eff3:image.png)
+    
+
+### Named Routes
+
+path 경로를 그대로 사용하면, URL 경로를 변경할때 URL을 사용한 모든 파일을 다 변경해야함
+
+![image.png](attachment:188aef77-9268-485a-aac7-8480a72cf5ab:image.png)
+
+→  유지보수 난이도 증가
+
+⇒ Named Routes : name 속성 값에 경로에 대한 이름을 지정
+
+![image.png](attachment:4680feb7-f6d1-4e35-8411-f36743c6efc1:image.png)
+
+### Dynamic Route Matching
+
+: 일정한 패턴의 URL 작성을 반복해야하는 경우 사용. URL의 일부를 변수로 사용하여 경로를 동적으로 매칭
+
+예시
+
+UserView라는 컴포를 만든 후,
+
+![image.png](attachment:21cd8f7b-49da-4d84-b3f9-cc983dd35ceb:image.png)
+
+![image.png](attachment:d9c2e9d8-d7b8-436f-92d5-975ca974ea3d:image.png)
+
+이렇게 매핑 후 id 값을 가지고 오려면 $route로 참조 가능. 
+
+![image.png](attachment:47e133aa-0a94-4f2f-8e6a-5fd74d041041:image.png)
+
+근데 JS 코드로 접근하려면 useRoute() 함수 사용
+
+![image.png](attachment:14ff887b-32a6-43c4-8668-ea9ccf9dd433:image.png)
+
+### Nested Routes
+
+: 중첩된 라우팅. 특정 페이지(부모)의 레이아웃은 유지한 채, 그 안의 일부 영역만 다른 내용으로 교체하는 라우팅 방식
+
+![image.png](attachment:6170357b-8d0b-4a39-bb73-2ddc36fcdc06:image.png)
+
+예시
+
+유저 프로필 내부에 중첩으로 사용할 컴포 생성하기
+
+components 폴더에 profile과 post 컴포 작성 후 등록
+
+‘childred’ 옵션을 사용해 중첩된 라우터에 컴포 등록
+
+![image.png](attachment:878991d8-9108-480f-aace-8239ccca4d29:image.png)
+
+(childen은 path의 맨앞에 /가 없어야 현재 url 뒤에 붙음)
+
+두 컴포에 대한 RouterLink 및 RouterView 작성
+
+![image.png](attachment:971002fa-ba09-40b0-a2b9-07e2df5f2a33:image.png)
+
+그러면 같은 영역에 중첩된 페이지를 switch하며 표시
+
+![image.png](attachment:58705d60-487e-41f5-84c0-23d6cf196537:image.png)
+
+근데, 중첩된 Named Routes를 다룰때는 일반적으로 ‘하위 경로에만 이름을 지정’
+
+![image.png](attachment:54ad7766-fa3a-4120-850d-623f707b4d0d:image.png)
+
+### Programmatic Navigation
+
+<RouterLink>를 사용하는 대신, JS코드를 사용해 페이지를 이동시키는 것 → 프로그래밍으로 URL 이동하기
+
+router의 메서드
+
+- router.push() : 다른 위치로 이동하기 (뒤에 새로운 페이지 추가)
+    
+    → create로 갔다가 detail로 이동 = 뒤로가기 가능
+    
+    ![image.png](attachment:2e8e82bb-018c-492d-9be8-2e2b9dc5fddd:image.png)
+    
+    ![image.png](attachment:60aae5be-aa7b-41ad-a7a1-0981fac42385:image.png)
+    
+- router.replace() : 현재 위치 바꾸기 (다른 값으로 재할당)
+    
+    → 뒤로가기 하면 create가 아닌 index로
+    
+    ![image.png](attachment:fe74df9b-dda0-40c8-a183-7db2cff83918:image.png)
+    
+
+## route와 router
+
+### route
+
+useRoute() : 현재 보여지는 ‘경로 정보’를 담은 route 객체를 반환
+
+컴포의 setup 함수나 <script setup>최상단에서만 호출해야함
+
+![image.png](attachment:011f9a75-bb93-4701-be5f-d2a6c3f7224f:image.png)
+
+### router
+
+useRouter() : 라우터 인스턴스 router 객체를 반환
+
+페이지 이동 등 액션용 (useRoute는 경로 정보 읽기용)
+
+![image.png](attachment:8cfbb5ce-9085-42d7-bc6e-5b4bea9a723a:image.png)
+
+![image.png](attachment:ac37651f-6656-427d-8aad-8fea731bb4d0:6bd9a6fc-760d-4227-9d8c-e6e0c37bb23b.png)
+
+## Navigation Guard
+
+Vue router를 통해 특정 URL에 접근할 때 다른 URL로 replace를 하거나 취소하여 접근에서 보호
+
+ex) 로그인 상태나 권한 확인 후 접근 제어 및 이동시킴
+
+### Globally Guard (전역 가드)
+
+: 모든 URL을 관리. 모든 라우트 전환에 적용
+
+작성 위치 : index.js
+
+- beforeEach()
+    
+    : 다른 URL로 이동 직전에 실행되는 함수
+    
+    ![image.png](attachment:3add752c-d258-485e-b9cc-87aee21b8555:image.png)
+    
+    ![image.png](attachment:9dbf6a08-9c5f-4c26-ae58-f972a0f21692:image.png)
+    
+- beforeResolve()
+    
+    : beforeEach와 모든 컴포넌트 단위 가드가 실행된 후, 내비게이션이 확정되기 직전에 호출
+    
+    마지막으로 무언가를 확인하고 싶을때 사용
+    
+- afterEach()
+    
+    : 내비게이션이 완전히 확정된 후, 즉 URL이 변경되고 화면 렌더링이 끝난 뒤에 호출
+    
+
+### Per-route Guard (라우터 가드)
+
+: 특정 라우트에만 적용
+
+작성 위치 : index.js의 각 routes
+
+- beforeEnter()
+    
+    라우트에 진입했을 때만 실행되는 함수
+    
+    ![image.png](attachment:479e1384-f9e6-4cd0-a6b4-c0f470336763:image.png)
+    
+    ![image.png](attachment:c4540116-d583-4303-94b4-284419cd790e:image.png)
+    
+
+### In-component Guard (컴포넌트 가드)
+
+: 컴포넌트 내에서만 적용
+
+작성 위치 : 각 컴포의 <script> 내부
+
+- onBeforeRouteLeave()
+    
+    : 현재 라우트에서 다른 라우트로 이동하기 전에, 사용자가 페이지를 떠나는 동작에 대한 로직을 처리
+    
+    ![image.png](attachment:65ecef08-fe6f-4b10-bd99-d74876f429f1:image.png)
+    
+- onBeforeRouteUpdate()
+    
+    : 이미 렌더링된 컴포가 같은 라우트 내에서 업뎃되기 전에 실행되어, 추가적인 로직을 처리
+    
+    ![image.png](attachment:77bad49d-5c03-45a9-9948-b50da2aa6014:image.png)
+    
+    ![image.png](attachment:83cf47a0-f1be-4675-845e-d4811f1659e8:image.png)
+    
+
+## 참고
+
+### Lazy Loading Routes
+
+: Vue 앱 첫 빌드시 해당 컴포를 로드하지 않고, 해당 경로를 처음으로 방문할 때만 컴포를 로드 하는 것
+
+component에 함수로 import 시킴
+
+![image.png](attachment:bc4acc63-8ca9-4821-a94d-25b214a0e86c:image.png)
