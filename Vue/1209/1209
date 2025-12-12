@@ -1,0 +1,277 @@
+1209 Vue 7 DRF with Vue
+
+## 프로젝트 개요
+
+### DRF 플젝
+
+- Model 클래스 확인
+    
+    ![image.png](attachment:6243b745-d256-4e50-8844-02f4661ba2d0:820e0102-aedf-438b-8bf6-9b8c5d1a4bc8.png)
+    
+- URL 확인
+    
+    ![image.png](attachment:e0a81edb-f76c-422d-aca9-3c532a64f8b2:fa50af48-bd26-4b8d-a777-441c89898f72.png)
+    
+- Serializers 확인
+    
+    ![image.png](attachment:6ac520f1-ce22-4285-9069-2508ad4ba043:image.png)
+    
+- views.py의 import 확인
+    
+    ![image.png](attachment:8373c0eb-153e-48d2-b393-3baa94f563c3:image.png)
+    
+    - get_object_or_404 : 조건이 맞는 모델 인스턴스 반환, 없으면 404
+    - get_object_or_404 : 모든 모델 데이터 반환, 하나도 없으면 404
+- View 함수 확인
+    
+    ![image.png](attachment:abf19e50-b529-4b75-bf4f-7ec8728ba35a:image.png)
+    
+    many=True 속성으로 모든 게시글 정보 들고오기!
+    
+- settings.py 확인
+    
+    ![image.png](attachment:901717a1-c6f1-44a5-ab31-d5cbcc6df157:image.png)
+    
+    ![image.png](attachment:263dafaf-42d3-42be-a3ef-d3b59558c671:image.png)
+    
+- Fixtures 확인
+    
+    ![image.png](attachment:35d10c74-4172-442c-a0f0-90e3db255ee8:image.png)
+    
+- 가상환경 생성 및 활성화 & 패키지 설치
+- Migration & Fixtures 데이터 로드
+    
+    ![image.png](attachment:834ac9d4-77ed-4baf-8c67-d684891018b8:image.png)
+    
+
+### Vue 플젝 안내
+
+![image.png](attachment:3171a5df-5c30-4742-8485-e6480c2551de:image.png)
+
+- App 컴포 확인
+    
+    ![image.png](attachment:e1d44bc9-5486-46bb-a641-b713bbbfb908:image.png)
+    
+- route에 등록된 컴포들
+    
+    Article, Create, Detail, Login, Signup
+    
+- router/index.js 확인
+    
+    ![image.png](attachment:732b7fd9-2930-4684-b605-581721a25f3b:image.png)
+    
+- store 확인
+    
+    ![image.png](attachment:f351377b-a0e5-42a8-b7af-6220462e3a25:image.png)
+    
+- main.js 현황
+    
+    ![image.png](attachment:2863e6ea-d063-42df-adcb-44d7759bfab1:image.png)
+    
+- django 서버와는 별개로 터미널 열어서
+    
+    ![image.png](attachment:359de728-417c-4189-b642-8c4fb77efd17:image.png)
+    
+    django 서버실행하면 경로가 그쪽일테니 다시 cd ..으로 돌아가서 vue-project 로 들어간 후, ls 로 package.json 이 있는지 확인
+    
+    패키지 설치 (npm install) 및 서버 실행(npm run dev)
+    
+
+## 메인 페이지 구현
+
+### 게시글 목록 출력
+
+- index.js 에서 router 설정
+    
+    ![image.png](attachment:7cd7608f-b470-4417-8924-b5cf40af8c34:image.png)
+    
+- ArticleView 컴포로 이동하는 RouterLink 작성
+    
+    ![image.png](attachment:75e38c2a-34ee-479f-a148-e37fd6ec3929:image.png)
+    
+- ArticleList 컴포를 ArticleView에 등록
+- store에 임시 데이터 articles 배열 작성
+    
+    ![image.png](attachment:6de5b1fc-9fc4-47e7-bd96-300acf49e209:image.png)
+    
+- ArticleList 컴포에서 게시글 목록 출력
+    
+    위에서 작성한 store의 articles 데이터 참조
+    
+    v-for로 하위 컴포에서 사용할 article을 props로 전달 (store보다 반복해서 전달하는게 효율적이니까)
+    
+    ![image.png](attachment:a8196715-f833-4c84-904b-cbed8ed70ae7:image.png)
+    
+- ArticleListItem 컴포는 내려받은 props 정의
+    
+    ![image.png](attachment:a3c56498-6eac-466f-8742-435ecb7625bc:image.png)
+    
+
+### DRF와의 요청과 응답
+
+> DRF 서버로부터 받은 데이터로  store에 저장
+> 
+- DRF 서버로부터 AJAX 요청을 위한 axios 설치 및 관련 코드 작성
+    
+    ![image.png](attachment:24af43a1-daf2-4b71-8701-22ab20c6aecb:image.png)
+    
+- DRF 서버로 요청 보내고 응답 데이터 처리하는 getArticles 함수 작성
+    
+    ![image.png](attachment:9147654e-03de-4cd6-b9d3-75b245a2b4de:image.png)
+    
+    → 그럼 이 함수는 어떻게 호출되느냐?
+    
+    ⇒ 라이프사이클 훅 onMounted 사용
+    
+- ArticleView 컴포가 마운트될 때 getArticles 함수가 실행되도록 함
+    
+    ![image.png](attachment:d0e2692f-36bc-4821-bcc7-e028d280b388:image.png)
+    
+- 에러 발생! DRF 서버 측에서는 200ok 인데 Vue 에러
+    
+    ![image.png](attachment:34b435e4-18a9-4aa3-ba5b-17849bbe0b16:image.png)
+    
+    ![image.png](attachment:fc2a9bf0-0b11-4676-8351-e0e8f85d984c:image.png)
+    
+- 서버는 응답했으나, 브라우저 측에서 거절한 것
+    
+    ![image.png](attachment:3a249288-2205-44df-a016-7919c3c53c80:image.png)
+    
+    → CORS Policy에 의해 XMLHttpRequest에 대한 접근이 차단된것
+    
+
+## CORS Policy
+
+: 기본적으로 웹브라우저는 같은 출처에서만 요청하는 것을 허용 → 다른 출처로의 요청은 보안상의 이유로 차단
+
+SOP(Sama-origin policy, 동일 출처 정책) : 어떤 출처(origin)에서 불러온 문서나 스크립트가 다른 출처에서 가져온 리소스와 상호작용하는 것을 제한하는 보안 방식
+
+→ 잠재적으로 해로울수있는 문서를 분리함으로써 공격받을수있는 경로를 줄임
+
+Origin : URL의 Protocol, Host, Port를 모두 포함하여 출처라 함
+
+![image.png](attachment:76c091f0-d4bd-4c0c-9a5c-0b4edb99a0a2:image.png)
+
+![image.png](attachment:43a5bfb9-9257-401a-bafb-b7a37aa27e61:image.png)
+
+(근데 Postman은 브라우저가 아니라서 해당 안됨)
+
+→ CORS Policy의 등장. 웹 서버가 리소스에 대한 서로 다른 출처 간 접근을 허용하도록 선택할 수 있는 기능을 제공
+
+CORS (교차 출처 리소스 공유)
+
+: 특정 출처에서 실행중인 웹앱이 다른 출처의 자원에 접근할 수 있는 권한을 부여하도록 브라우저에 알려주는 체제
+
+CORS Policy 
+
+: 다른 출처에서 온 리소스를 공유하는 것에 대한 정책
+
+서버에서 설정되며, 브라우저가 해당 정책을 확인하여 요청이 허용되는지 여부를 결정
+
+→ 다른 출처에서 올바른 CORS headers를 포함한 응답을 반환해야함
+
+![image.png](attachment:e97aa373-a422-4096-a36c-63dc92f2bbc3:image.png)
+
+### CORS Headers 설정
+
+1. Django에서는 django-cors-headers 라이브러리 활용 (pip install 로 설치)
+2. settings.py에서 CORS를 허용할 Vue 프로젝트의 Domain 등록
+    
+    ![image.png](attachment:66b9e691-c51d-4ae8-aa12-78fea8d44e71:image.png)
+    
+    이 corsheaders 미들웨어 위치도 기억하기! 
+    
+3. 메인페이지에서 DRF 응답 데이터 재확인
+    
+    ![image.png](attachment:4beb6d4d-cf9b-4e28-ae34-2309af970b9a:image.png)
+    
+    ![image.png](attachment:d5f9e0c7-f20b-4e87-a3d7-ff4e5ab8c945:image.png)
+    
+4. 응답 객체에서 Access-Control-Allow-Origin 헤더 확인
+    
+    ![image.png](attachment:48354a00-9e6f-4ce5-b29d-dc187eb64106:image.png)
+    
+
+## 게시글 생성/조회 구현
+
+### 전체 게시글 조회
+
+- 위의 과정에서 응답받은 데이터를 확인했다면, 각 게시글의 데이터 구성 확인 (id, title, content)
+    
+    ![image.png](attachment:37d3a5b4-9121-4820-bc01-74c608e72f3c:image.png)
+    
+- store에 게시글 목록 데이터 저장 후 store에 저장된 게시글 목록 출력 확인
+    
+    (pinia-plugin-persistedstate에 의해 브라우저 Local Storage에 저장됨)
+    
+    ![image.png](attachment:1cb8b0b0-bb74-472a-835c-c684e46f0637:image.png)
+    
+
+### 단일 게시글 조회
+
+- DetailVue 관련 route 설정
+    
+    ![image.png](attachment:a94383a2-cb8a-43e1-aed4-db22eaf9c9af:image.png)
+    
+- ArticleListItem에 DetailView 컴포로 가기 위한 RouterLink 작성
+    
+    ![image.png](attachment:6d12d4ae-2338-4437-b426-e92a11ce0a51:image.png)
+    
+- DetailView가 마운트 될때, 특정 게시글을 조회하는 AJAX 요청을 보낸 후 응답 데이터 확인’
+    
+    ![image.png](attachment:accee4f8-b53a-41a1-ae83-5213e0b9f355:image.png)
+    
+- 응답 데이터 저장 후 출력
+    
+    ![image.png](attachment:969860a0-1b67-4893-ab08-3eee2566df2d:image.png)
+    
+    → 단일 게시글은 특정페이지에서만 조회하기 때문에, pinia로 공용으로 사용하지 않음
+    
+    ![결과 화면](attachment:73f8828e-67cb-41c4-8f0a-7dd3e1d98fa0:image.png)
+    
+    결과 화면
+    
+    store에서 API_URL을 변수에 저장했다면, 꼭 return 빼먹지 말기! (LLM도 못찾음)
+    
+
+### 게시글 작성
+
+1. CreateView 관련 route 설정
+    
+    ![image.png](attachment:718f118f-b448-4a16-8c28-5ddb74d0802b:image.png)
+    
+2. ArticleView에 CreateView 컴포로 가기 위한 RouterLink 작성
+    
+    ![image.png](attachment:d31f8741-5c39-4021-bb6a-63615b3b3cb7:image.png)
+    
+3. v-model을 사용해 사용자 입력 데이터를 양방향 바인딩
+    
+    v-model의 **trim** 수식어를 사용해 사용자 입력 데이터의 **공백 제거**
+    
+    ![image.png](attachment:4f1971d6-9122-4150-a5a3-c8b73b7c7954:image.png)
+    
+4. 양방향 바인딩 데이터 입력 확인
+    
+    ![image.png](attachment:d27bf65d-002c-4daf-b44c-672a174e2d57:image.png)
+    
+5. 게시글 생성 요청을 담당하는 createArticle 함수 작성
+    
+    생성 성공하면 ArticleView 컴포로 이동시킴
+    
+    ![image.png](attachment:a4bf5ed3-c9f5-4a03-9b23-4d723cff0f50:image.png)
+    
+6. submit 이벤트가 발생하면 createArticle 함수 호출
+    
+    v-on의 prevent 수식어를 사용해 submit 이벤트의 기본 동작 취소
+    
+    ![image.png](attachment:cfffcf03-18df-4b92-9e3e-6cf6a8b34f31:image.png)
+    
+7. 게시글 생성 결과 및 DB 확인
+    
+    ![image.png](attachment:69bc3980-6201-41d3-b1e1-542d73f82bf4:image.png)
+    
+8. 코드 흐름에서의 front to back
+    
+    ![image.png](attachment:8d8a2171-f479-43bd-8101-84601b406594:image.png)
+    
+    vue에서 v-model 로 양방향 바인딩된 데이터들이 입력에 의해 저장되면 axios로 해당 url에 요청이 가서, django에서 해당 url의 post 요청이 가게 되어 DB에 저장이 된다.
