@@ -1,0 +1,264 @@
+1208 Vue 6 State Management
+
+## State Management
+
+State : 앱 구동에 필요한 기본 데이터
+
+View : 상태를 선언적으로 매핑하여 시각화
+
+Actions : 뷰에서 사용자 입력에 대해 반응적으로 상태를 변경할 수 있게 정의된 동작
+
+![image.png](attachment:7493d092-3b48-406e-81bd-47581fd65f21:image.png)
+
+→ 이 세가지는 단방향 흐름
+
+but, 상태 관리의 단순성이 무너지는 시점
+
+→ 여러 컴포넌트가 상태를 공유할 때
+
+1. 여러 뷰가 동일한 상태에 종속되는 경우
+    
+    ![image.png](attachment:fc40fe4d-8a04-46ad-8c97-b77cd478aeb4:image.png)
+    
+2. 서로 다른 뷰의 기능이 동일한 상태를 변경시켜야 하는 경우
+    
+    ![image.png](attachment:409c064c-94b2-49c8-b637-da744a7ffeed:image.png)
+    
+
+⇒ 해결 방법
+
+- 각 컴포의 공유 상태를 추출하여, 전역에서 참조할 수 있는 저장소에서 관리
+- 그리고 이 저장소의 역할을 하는 것이 Pinia
+    
+    ![image.png](attachment:283d5394-65e9-4177-ac26-c4d521afeeb4:image.png)
+    
+- Pinia는 Vue의 공식 상태관리 라이브러리
+- 컴포 트리는 하나의 큰 View가 되고 모든 컴포는 트리 계층 구조에 관계없이 상태에 접근하거나 기능을 사용 가능
+
+## State Management Library
+
+### Pinia
+
+: Props나 emit으로 복잡하게 데이터 전달 필요 없이(쓰는 상황도 있음), 어떤 컴포는 여기에 접근하여 데이터를 읽거나 수정 가능
+
+create시 pinia 라이브러리 추가하면, stores 폴더에 counter.js가 추가됨
+
+### Pinia 구성요소
+
+1. store
+    
+    : 실질적으로 공통 데이터를 관리하는 중앙 저장소
+    
+    모든 컴포가 공유하는 상태이며, 기능이 작성됨
+    
+    ![image.png](attachment:77ee8822-4b3e-4331-adfb-4b2c45c5b367:image.png)
+    
+    ![image.png](attachment:c05c2d17-a034-4b79-8aa9-d505d4b9254d:image.png)
+    
+2. state
+    
+    : 저장되는 반응형 상태(데이터)
+    
+    ref()와 같은 역할
+    
+    ![image.png](attachment:da955916-d940-4fd9-a106-9344094eafbe:image.png)
+    
+3. getters
+    
+    : 계산된 값. computed()와 똑같은 역할을 함(캐싱됨)
+    
+    state를 기반으로 파생된 값을 정의하는 것
+    
+    ![image.png](attachment:20e36c6c-f58a-49de-991c-c5785547eb62:image.png)
+    
+4. actions
+    
+    : (store에서 정의하는 함수는) state를 변경하는 역할 
+    
+    → 되도록 store에서 함수로 state를 변경하고 component에서 그 함수를 호출하는 구조로
+    
+    methods와 같은 역할을 함
+    
+    ![image.png](attachment:97fb73aa-57b3-4e92-abbf-46f54f5d0a24:image.png)
+    
+5. 반환값
+    
+    : pinia의 상태들을 사용하려면 반드시 반환해야함
+    
+    store에서는 공유하지 않는 private한 상태속성을 가지지 않음
+    
+    (not define 뜨면 대부분 리턴 미기입 오류)
+    
+    ![image.png](attachment:963f6cce-b6ef-4a8e-88d5-4c870eb31d9e:image.png)
+    
+6. plugin
+    
+    : 상태관리에 필요한 추가기능을 제공하거나 확장하는 도구나 모듈 (패키지 매니저로 설치후, 별도 설정을 통해 추가됨)
+    
+    ![image.png](attachment:4d438bd4-f7a8-4038-b116-1d4b064edb4c:image.png)
+    
+
+### Pinia 구조 요소 활용
+
+state : 
+
+각 컴포 깊이에 관계없이 store 인스턴스로 state에 접근하여 직접 읽고 쓸수있음
+
+→ store에서 state를 정의하지 않았다면, 컴포에서 새로 추가 불가
+
+![image.png](attachment:f3281810-f91b-4317-bcc7-342deb81e727:image.png)
+
+getters : 
+
+store의 모든 getters 또한 state 처럼 직접 접근 가능
+
+![image.png](attachment:d7d76ee8-dd42-417d-ae03-701a46911b17:image.png)
+
+Actions : 
+
+store의 모든 actions 또한 직접 접근 및 호출 가능
+
+getters와 달리 state 조작, 비동기, API호출이나 다른 로직 진행 가능’
+
+![image.png](attachment:19804025-cb31-4637-b1e3-bbd6d8fabba8:image.png)
+
+## Piana 실습
+
+> Pinia를 활용한 Todo 플젝 구현
+> 
+
+![image.png](attachment:bde55d39-41f4-4dad-b8f0-13ad38cf747f:image.png)
+
+### 사전준비
+
+아래와 같이 컴포넌트 구성 및 작성
+
+![image.png](attachment:a53e599f-dcee-487e-8262-80a317409e19:image.png)
+
+### Todo 조회
+
+1. store에 임시 todos 목록 state를 정의
+    
+    ![image.png](attachment:71cc1b81-1dfe-497b-a2f3-b3656e1b8509:image.png)
+    
+2. store의 todos state를 참조
+    
+    하위 컴포인 TodoListItem을 반복하면서 개별 todo를 props로 전달
+    
+    ![image.png](attachment:ca29ffe1-8fa0-4668-8716-f6bac623a10a:image.png)
+    
+3. props 정의 후 데이터 출력 확인
+    
+    ![image.png](attachment:c182bfa3-daea-4b5b-bcd1-73f9c88db828:image.png)
+    
+
+### Todo 생성
+
+1. todos 목록에 todo를 생성 및 추가하는 addTodo 액션 정의
+    
+    ![image.png](attachment:8f173ae2-0e32-4f76-ab57-b613d2cbdd91:image.png)
+    
+2. TodoForm에서 실시간으로 입력되는 사용자 데이터를 양방향 바인딩하여 반응형 변수로 할당
+    
+    ![image.png](attachment:53d0aa46-07b3-4995-a99a-e1837c37afdc:image.png)
+    
+3. submit 이벤트가 발생했을때 사용자 입력 텍스트를 인자로 전달하여 store에 정의한 addTodo 액션 메서드를 호출
+    
+    ![image.png](attachment:f3441ace-4fb2-4f44-aba0-1e6c50c124c7:image.png)
+    
+4. form 요소를 선택하여 todo 입력 후 input 데이터를 초기화 할 수 있도록 처리 
+    
+    → reset() 이라는 DOM함수 사용
+    
+    ![image.png](attachment:5ade5776-4a2c-4778-bafd-8626d99cf8ad:image.png)
+    
+
+### Todo 삭제
+
+1. todos 목록에서 특정 todo를 삭제하는 deleteTodo 액션 정의
+    
+    ![image.png](attachment:6e718317-3b49-48f6-9571-cc70c2a8ab31:image.png)
+    
+2. 각 todo에 버튼을 클릭하면 선택된 todo의 id를 인자로 전달해 deleteTodo 메서드 호출하고, 그 메서드는 전달 받은 인자를 store의 deleteTodo에게 전달하며 호출
+    
+    ![image.png](attachment:c24137f0-4349-4d72-acd4-76963aed50a4:image.png)
+    
+3. 두 가지 중 하나로 삭제 구현
+    1. findindex를 활용해 하나만 찾아서 삭제
+        
+        ![image.png](attachment:85ba6a10-5a16-4fb1-a1d6-401057b39ea4:image.png)
+        
+    2. filter로 삭제하지 않아도 되는 것들만 모아서 재생성
+        
+        ![image.png](attachment:4b9898c0-0009-4d15-a826-508e60029e67:image.png)
+        
+
+### Todo 수정
+
+목표 : 각 todo 상태의 isDone 속성을 변경하여 todo의 완료 유무를 처리하고, 취소선 스타일 적용
+
+1. todos 목록에서 특정 todo의 isDone 속성을 변경하는 updateTodo 액션 정의
+    
+    ![image.png](attachment:cb6090c2-91e5-4511-831b-7474de402e39:image.png)
+    
+2. 체크박스 클릭 → isDone ref 변경 → watch 감지 → store.updateTodo 호출
+    
+    ![image.png](attachment:6a794091-63df-4c91-b1d6-b8ffc9c033c2:image.png)
+    
+    ![image.png](attachment:97348a7b-3701-4c66-92cf-990c7fa6db8c:image.png)
+    
+3. 두 가지 중 하나로 수정 구현
+    1. forEach를 활용해 하나만 찾아서 수정
+        
+        ![image.png](attachment:adf16b79-a5dd-424e-bc6f-342dc45ddba9:image.png)
+        
+    2. map을 활용해 수정 해야하는 항목을 찾아서 수정하고, 수정한 객체를 사용
+        
+        ![image.png](attachment:a9242d4c-1fab-4e00-8ddb-9bea60e09c56:image.png)
+        
+4. todo 객체의 isDone 속성 값에 따라 스타일 바인딩 적용 후 결과 확인
+    
+    ![image.png](attachment:89720341-f509-48c6-ba7c-a0f518acb19b:image.png)
+    
+
+![image.png](attachment:243ff660-382a-41c8-8db9-a0f0c0398196:image.png)
+
+### Todo 카운팅
+
+완료된 todo 개수 계산
+
+1. todos 배열의 길이 값을 반환하는 함수 doneTodosCount 작성 (getters)
+    
+    ![image.png](attachment:75b83677-8b54-44cd-b481-fdf4a392fed6:image.png)
+    
+2. App 컴포에서 doneTodoCount gette를 참조
+
+### Local Storage
+
+: 브라우저 내에 key-value 쌍을 저장하는 웹 스토리지 객체
+
+웹 브라우저에 데이터를 영구적으로 저장할 수 있는 ‘개인 하드디스트’ 같은 공간
+
+![image.png](attachment:8141d5cd-09aa-4936-b002-4d9badcae8f2:image.png)
+
+↓ 그러기 위해 사용 
+
+pinia-plugin-persistedstate
+
+(https://prazdevs.github.io/pinia-plugin-persistedstate/guide/ 참조)
+
+: Piana의 플러그인 중 하나. 웹 어플의 상태(state)를 브라우저의 local storage나 session storage에 영구적으로 저장하고 복원하는 기능을 제공
+
+![image.png](attachment:bbd7f77d-38b8-4c4e-a798-20d52a21fff5:image.png)
+
+![image.png](attachment:3aa77f63-c56d-48f6-a182-673dff4b0835:image.png)
+
+![image.png](attachment:2beb7784-9147-42c9-8dd0-d7187185c12e:image.png)
+
+## 참고
+
+### Piana 활용 시점
+
+![image.png](attachment:2a484781-e36f-415e-99e3-d6fe9f1166fd:image.png)
+
+![image.png](attachment:0a2b801a-8f5b-4a3b-a6d9-8684df978224:image.png)
