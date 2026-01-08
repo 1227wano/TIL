@@ -1,0 +1,15 @@
+# dataset/fashion.yaml
+path: dataset/fashion                                    # 데이터셋 root
+train: images/train                                      # 학습에 사용할 이미지
+val: images/test                                        # 검증(Test)용 이미지
+names:                                                   # Class 매핑 
+  0: sunglass
+  1: hat
+  2: jacket
+  3: shirt
+  4: pants
+  5: shorts
+  6: skirt
+  7: dress
+  8: bag
+  9: shoe
